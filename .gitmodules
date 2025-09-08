@@ -1,0 +1,6 @@
+[submodule "cab-booking-service"]
+	path = cab-booking-service
+	url = git@github.com:vl4d09/cab-booking-service.git
+[submodule "check-in-service"]
+	path = check-in-service
+	url = git@github.com:vl4d09/check-in-service.git
