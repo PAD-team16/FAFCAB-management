@@ -1,0 +1,3 @@
+[submodule "lostnfound-service"]
+	path = lostnfound-service
+	url = https://github.com/VMM-MMV/lostnfound-service.git
