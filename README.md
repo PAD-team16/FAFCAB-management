@@ -3,33 +3,37 @@
 This document outlines the communication contracts for the microservices within the FAF Cab Management Platform. All services that require user authentication or user-specific information will validate requests using a **JWT (JSON Web Token)** provided in the `Authorization` header.
 
 ---
+
 ## Overview
 
 The FAF Cab Management Platform is designed to improve the organization and operational efficiency of FAF Cab, with modular microservices for user management, communication, booking, consumable tracking, fundraising, and more. Each microservice encapsulates a specific domain to ensure modularity, independence, and maintainability.
 
 Microservices are implemented using multiple technologies to optimize performance and leverage language-specific strengths:
 
-* **Java/Spring Boot:** User Management, Notification, Budgeting, Fundraising, Sharing
-* **Elixir:** Communication Service, Tea Management, Lost & Found, Budgeting
-* **JavaScript/Node.js:** Cab Booking, Check-in
+- **Java/Spring Boot:** User Management, Notification, Budgeting, Fundraising, Sharing
+- **Elixir:** Communication Service, Tea Management, Lost & Found, Budgeting
+- **JavaScript/Node.js:** Cab Booking, Check-in
 
 ---
+
 # Technologies & Communication Patterns
+
 ---
 
-| Team             | Services                          | Language & Framework        | Database       | Communication Patterns                   | Motivation & Trade-offs                                                                                                                                                                                                                                                                                                      |
-|------------------|---------------------------------|----------------------------|----------------|-----------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Vieru Mihai      | Lost & Found, Budgeting          | Elixir          | PostgreSQL     | REST, Asynchronous notifications, WebSocket (Phoenix Channels) | Elixir’s ability to handle high concurrency and fault tolerance is ideal for budget and lost & found services that require reliable multi-user interaction and asynchronous notifications.            |
-| Polisciuc Vlad   | Tea Management Service, Communication Service | Elixir        |      | REST, Async notifications                | Elixir excels at real-time, low-latency systems. Its lightweight processes and OTP supervision enhance fault tolerance, perfect for consumable tracking and live chat. Cowboy's native WebSocket support enables efficient bi-directional communication, crucial for the communication service's real-time messaging and moderation features.                      |
-| Ungureanu Vlad   | Cab Booking, Check-in            | Node.js, Express           | PostgreSQL     | REST, Async loops, External API integration (Google Calendar)   | Node.js is exceptionally well-suited for applications like booking systems due to its event-driven, non-blocking I/O model. When the system needs to perform an action that relies on an external service, such as fetching data from the Google Calendar API, it sends the request and immediately proceeds to handle other tasks without waiting for a response. This asynchronous capability means the application doesn't get stuck, allowing its lightweight runtime to efficiently manage many simultaneous user requests.                      |
-| Tapu Pavel       | Fundraising, Sharing             | Java, Spring Boot          | PostgreSQL     | REST with JWT auth, Async notification queues | Java and Spring Boot provide a mature, secure, and scalable framework for handling critical business workflows like fundraising and item sharing. Strong security features (JWT auth) and stable async processing suit admin-controlled services requiring transactional integrity and complex business logic.                         |
-| Copta Adrian     | User Management, Notification    | Java, Spring Boot          | PostgreSQL     | REST, Async event-driven updates        | The Spring ecosystem offers robust authentication (including JWT), authorization, and notification capabilities critical for user and notification management. Because of high developer productivity and strong integration with databases and enterprise security standards, it makes ideal for core identity and communication services.       |
+| Team           | Services                                      | Language & Framework | Database   | Communication Patterns                                         | Motivation & Trade-offs                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------- | --------------------------------------------- | -------------------- | ---------- | -------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vieru Mihai    | Lost & Found, Budgeting                       | Elixir               | PostgreSQL | REST, Asynchronous notifications, WebSocket (Phoenix Channels) | Elixir’s ability to handle high concurrency and fault tolerance is ideal for budget and lost & found services that require reliable multi-user interaction and asynchronous notifications.                                                                                                                                                                                                                                                                                                                                       |
+| Polisciuc Vlad | Tea Management Service, Communication Service | Elixir               |            | REST, Async notifications                                      | Elixir excels at real-time, low-latency systems. Its lightweight processes and OTP supervision enhance fault tolerance, perfect for consumable tracking and live chat. Cowboy's native WebSocket support enables efficient bi-directional communication, crucial for the communication service's real-time messaging and moderation features.                                                                                                                                                                                    |
+| Ungureanu Vlad | Cab Booking, Check-in                         | Node.js, Express     | PostgreSQL | REST, Async loops, External API integration (Google Calendar)  | Node.js is exceptionally well-suited for applications like booking systems due to its event-driven, non-blocking I/O model. When the system needs to perform an action that relies on an external service, such as fetching data from the Google Calendar API, it sends the request and immediately proceeds to handle other tasks without waiting for a response. This asynchronous capability means the application doesn't get stuck, allowing its lightweight runtime to efficiently manage many simultaneous user requests. |
+| Tapu Pavel     | Fundraising, Sharing                          | Java, Spring Boot    | PostgreSQL | REST with JWT auth, Async notification queues                  | Java and Spring Boot provide a mature, secure, and scalable framework for handling critical business workflows like fundraising and item sharing. Strong security features (JWT auth) and stable async processing suit admin-controlled services requiring transactional integrity and complex business logic.                                                                                                                                                                                                                   |
+| Copta Adrian   | User Management, Notification                 | Java, Spring Boot    | PostgreSQL | REST, Async event-driven updates                               | The Spring ecosystem offers robust authentication (including JWT), authorization, and notification capabilities critical for user and notification management. Because of high developer productivity and strong integration with databases and enterprise security standards, it makes ideal for core identity and communication services.                                                                                                                                                                                      |
 
 # Architectural Diagram of Microservices operation
 
 ![microserv](https://github.com/user-attachments/assets/2c87e83c-0a08-4641-9613-bbea49de16f1)
 
 The diagram above illustrates the microservices architecture designed for the FAFCab system. It highlights how different services, such as Notification Service, Communication Service, Budgeting Service, Fund Raising Service, Tea Management Service, and User Management Service, interact with each other through the API Gateway and Service Registry. Each service is responsible for a specific function, ranging from financial tracking and consumable management to user check-ins, booking, and lost-and-found operations. The modular design ensures that responsibilities are clearly separated, making the system scalable, maintainable, and easier to extend with new features as needed.
+
 ## **1. User Management Service**
 
 Handles user registration, authentication, and synchronization with the FAF Community Discord server.
@@ -241,6 +245,30 @@ Manages public and private chat channels, including content moderation.
       "name": "PAD Project Group",
       "participants": ["user-uuid-456", "user-uuid-789"],
       "isPrivate": true
+    }
+    ```
+
+**Add User to Channel**
+
+- `PATCH /api/communications/channels/{channel_id}`
+  - **Description:** Adds one or more new users to an existing channel.
+  - **Headers:** `Authorization: Bearer <jwt>`
+  - **Payload:**
+    ```json
+    {
+      "participants": ["new-user-uuid"]
+    }
+    ```
+  - **Success Response (200 OK):**
+    ```json
+    {
+      "status": "Users added successfully."
+    }
+    ```
+  - **Error Response (403 Forbidden):**
+    ```json
+    {
+      "error": "You do not have permission to add users to this channel."
     }
     ```
 
@@ -469,6 +497,7 @@ Allows admins to create fundraising campaigns for specific items.
       "user_id": "admin-uuid-001",
       "object": "New Projector",
       "object_description": "object description",
+      "description": "fundraise desription",
       "goal": 750.0,
       "time_dedicated": "2 days",
       "distribute_to": "sharing"
@@ -560,10 +589,12 @@ Keeps track of shared, reusable items like board games, chargers, and books.
 ## Branch Structure
 
 ### Main Branches
+
 - **`main`** - Production-ready code, always deployable
 - **`development`** - Integration branch for features, staging environment
 
 ### Branch Protection Rules
+
 - **Approvals Required**: 1 reviewers minimum
 - **Dismiss Stale Reviews**: Enabled (reviews are dismissed when new commits are pushed)
 - **Branch must be up to date**: Required before merging
@@ -577,16 +608,18 @@ type/short-description-issueID
 ```
 
 ### Branch Types
-| Prefix | Purpose | Example |
-|--------|---------|---------|
-| `feature/` | New functionality | `feature/user-authentication-23` |
-| `bugfix/` | Bug fixes | `bugfix/header-alignment-15` |
-| `hotfix/` | Critical production fixes | `hotfix/server-crash-18` |
-| `refactor/` | Code restructuring | `refactor/database-optimization-45` |
-| `docs/` | Documentation updates | `docs/api-documentation-12` |
-| `chore/` | Maintenance tasks | `chore/dependency-updates-8` |
+
+| Prefix      | Purpose                   | Example                             |
+| ----------- | ------------------------- | ----------------------------------- |
+| `feature/`  | New functionality         | `feature/user-authentication-23`    |
+| `bugfix/`   | Bug fixes                 | `bugfix/header-alignment-15`        |
+| `hotfix/`   | Critical production fixes | `hotfix/server-crash-18`            |
+| `refactor/` | Code restructuring        | `refactor/database-optimization-45` |
+| `docs/`     | Documentation updates     | `docs/api-documentation-12`         |
+| `chore/`    | Maintenance tasks         | `chore/dependency-updates-8`        |
 
 ### Naming Guidelines
+
 - Use lowercase letters and hyphens
 - Keep descriptions concise but descriptive
 - Always include the related issue number
@@ -597,12 +630,14 @@ type/short-description-issueID
 **Strategy**: Squash and Merge
 
 ### Benefits
+
 - Clean, linear commit history
 - Combines all commits from a feature branch into a single commit
 - Easier to track features and revert if necessary
 - Reduces noise in the main branch history
 
 ### Process
+
 1. Create feature branch from `development`
 2. Make commits with clear, descriptive messages
 3. Open Pull Request to `development`
@@ -614,6 +649,7 @@ type/short-description-issueID
 Every Pull Request must include:
 
 ### Required Information
+
 - **Clear description** of what changed and why
 - **Issue reference** (e.g., "Closes #42", "Fixes #18")
 - **List of specific changes** made
@@ -627,24 +663,29 @@ We use the following template (located at `.github/PULL_REQUEST_TEMPLATE.md`):
 
 ```markdown
 ## What does this PR do?
+
 Brief description of the change and its purpose.
 
 ## Related Issue
+
 Closes #XX
 
 ## Changes Made
+
 - [ ] Added login functionality
 - [ ] Fixed header spacing issue
 - [ ] Updated user authentication tests
 - [ ] Improved error handling
 
 ## Type of Change
+
 - [ ] Bug fix (non-breaking change that fixes an issue)
 - [ ] New feature (non-breaking change that adds functionality)
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] Documentation update
 
 ## How to Test
+
 1. Pull this branch: `git checkout feature/branch-name`
 2. Install dependencies: `npm install`
 3. Run the application: `npm start`
@@ -652,9 +693,11 @@ Closes #XX
 5. Verify [specific functionality]
 
 ## Screenshots (if applicable)
+
 [Attach images for UI changes]
 
 ## Checklist
+
 - [ ] My code follows the team's coding standards
 - [ ] I have performed a self-review of my code
 - [ ] I have commented my code, particularly in hard-to-understand areas
@@ -667,12 +710,14 @@ Closes #XX
 ## Testing Standards
 
 ### Current Requirements
+
 - All new functions should have corresponding tests
 - Run existing tests before submitting PR: `npm test`
 - Manual testing steps must be documented in PR
 - Critical features require integration testing
 
 ### Future Automation
+
 - GitHub Actions will be configured for automatic testing
 - All PRs must pass automated tests before merging
 - Code coverage reports will be generated
@@ -682,11 +727,13 @@ Closes #XX
 We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 
 ### Version Types
+
 - **MAJOR** (e.g., 1.0.0 → 2.0.0): Breaking changes that require user action
 - **MINOR** (e.g., 1.0.0 → 1.1.0): New features that are backward compatible
 - **PATCH** (e.g., 1.0.0 → 1.0.1): Bug fixes and small improvements
 
 ### Release Process
+
 1. Update version in `package.json`
 2. Create release notes documenting changes
 3. Tag release in GitHub: `git tag v1.0.0`
@@ -694,28 +741,34 @@ We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 5. Deploy to production
 
 ### Release Notes Format
+
 ```markdown
 ## [1.2.0] - 2024-03-15
 
 ### Added
+
 - User authentication system
 - Dashboard analytics
 
 ### Changed
+
 - Improved login flow UX
 - Updated API endpoints
 
 ### Fixed
+
 - Header alignment on mobile devices
 - Memory leak in data processing
 
 ### Security
+
 - Updated dependencies with security patches
 ```
 
 ## Code Review Guidelines
 
 ### For Reviewers
+
 - Check code quality and adherence to standards
 - Verify functionality matches requirements
 - Test the changes locally when possible
@@ -723,6 +776,7 @@ We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 - Approve only when confident in the changes
 
 ### For Authors
+
 - Respond to feedback promptly and professionally
 - Make requested changes in separate commits
 - Re-request review after addressing feedback
@@ -754,5 +808,7 @@ We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`
 - **QA**: Test major features before production deployment
 
 ### Testing Requirements
+
 - Unit test coverage minimum: 69 %
+
 ---
