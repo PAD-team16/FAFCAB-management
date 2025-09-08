@@ -1,0 +1,31 @@
+[submodule "cab-booking-service"]
+	path = cab-booking-service
+	url = git@github.com:vl4d09/cab-booking-service.git
+[submodule "check-in-service"]
+	path = check-in-service
+	url = git@github.com:vl4d09/check-in-service.git
+[submodule "lostnfound-service"]
+	path = lostnfound-service
+	url = https://github.com/VMM-MMV/lostnfound-service.git
+[submodule "budgeting-service"]
+	path = budgeting-service
+	url = https://github.com/VMM-MMV/budgeting-service.git
+
+[submodule "consumables-service"]
+	path = consumables-service
+	url = https://github.com/huntrese/consumables-service
+[submodule "communication-service"]
+	path = communication-service
+	url = https://github.com/huntrese/communication-service
+[submodule "fundraising-service"]
+	path = fundraising-service
+	url = https://github.com/Pavlon28/fundraising-service
+[submodule "sharing-service"]
+	path = sharing-service
+	url = https://github.com/Pavlon28/sharing-service
+[submodule "user-management-service"]
+	path = user-management-service
+	url = https://github.com/yaeby/user-management-service.git
+[submodule "notification-service"]
+	path = notification-service
+	url = https://github.com/yaeby/notification-service.git
