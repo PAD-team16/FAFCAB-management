@@ -1,3 +1,6 @@
 [submodule "lostnfound-service"]
 	path = lostnfound-service
 	url = https://github.com/VMM-MMV/lostnfound-service.git
+[submodule "budgeting-service"]
+	path = budgeting-service
+	url = https://github.com/VMM-MMV/budgeting-service.git
