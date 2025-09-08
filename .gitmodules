@@ -17,3 +17,9 @@
 [submodule "communication-service"]
 	path = communication-service
 	url = https://github.com/huntrese/communication-service
+[submodule "fundraising-service"]
+	path = fundraising-service
+	url = https://github.com/Pavlon28/fundraising-service
+[submodule "sharing-service"]
+	path = sharing-service
+	url = https://github.com/Pavlon28/sharing-service
