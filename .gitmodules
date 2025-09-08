@@ -11,3 +11,9 @@
 	path = budgeting-service
 	url = https://github.com/VMM-MMV/budgeting-service.git
 
+[submodule "consumables-service"]
+	path = consumables-service
+	url = https://github.com/huntrese/consumables-service
+[submodule "communication-service"]
+	path = communication-service
+	url = https://github.com/huntrese/communication-service
