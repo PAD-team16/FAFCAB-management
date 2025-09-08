@@ -4,3 +4,10 @@
 [submodule "check-in-service"]
 	path = check-in-service
 	url = git@github.com:vl4d09/check-in-service.git
+[submodule "lostnfound-service"]
+	path = lostnfound-service
+	url = https://github.com/VMM-MMV/lostnfound-service.git
+[submodule "budgeting-service"]
+	path = budgeting-service
+	url = https://github.com/VMM-MMV/budgeting-service.git
+
