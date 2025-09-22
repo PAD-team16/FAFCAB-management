@@ -1,0 +1,152 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: fafcab_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d
+    ports:
+      - "5433:5432"
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+  # Communication Service
+  communication-service:
+    image: huntrese/communication-service:latest
+    container_name: fafcab_communication_service
+    ports:
+      - "8089:8089"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8089/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+  # Consumables Service
+  consumables-service:
+    image: huntrese/consumables-service:latest
+    container_name: fafcab_consumables_service
+    ports:
+      - "8090:8090"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - JWT_SECRET=${JWT_SECRET}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - PORT=${CONSUMABLES_SERVICE_PORT}
+      - PHX_SERVER=true
+      - PHX_HOST=localhost
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+
+  # Budgeting Service
+  budgeting-service:
+    image: vmmmmv/budget:latest
+    container_name: fafcab_budgeting_service
+    ports:
+      - "8080:8080"
+    environment:
+      - POSTGRES_HOST=postgres
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - PHX_HOST=${PHX_HOST}
+      - PHX_SERVER=${PHX_SERVER}
+      - PORT=${BUDGETING_SERVICE_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+
+  # Lost and Found Service
+  lostnfound-service:
+    image: vmmmmv/lostnfound:latest
+    container_name: fafcab_lostnfound_service
+    ports:
+      - "8081:8081"
+    environment:
+      - POSTGRES_HOST=postgres
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - PHX_HOST=${PHX_HOST}
+      - PHX_SERVER=${PHX_SERVER}
+      - PORT=${LOST_AND_FOUND_SERVICE_PORT}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+
+  # User Management Service
+  user-management-service:
+    image: yaeby/user-management-service:0.0.1
+    container_name: fafcab_user_management_service
+    ports:
+      - "8082:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
+      - SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL=true
+      - SPRING_JPA_PROPERTIES_HIBERNATE_SHOW_SQL=true
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+  # Notification Service
+  notification-service:
+    image: yaeby/notification-service:0.0.1
+    container_name: fafcab_notification_service
+    ports:
+      - "8083:8090"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - discord.bot-token=${DISCORD_BOT_TOKEN}
+      - DISCORD_GENERAL_CHANNEL_ID=${DISCORD_GENERAL_CHANNEL_ID}
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  fafcab_network:
+    driver: bridge
