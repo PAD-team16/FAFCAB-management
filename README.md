@@ -437,10 +437,27 @@ JWT_SECRET=<JWT_SECRET>
 
 PHOENIX_HOST=<PHOENIX_HOST>
 SECRET_KEY_BASE=<SECRET_KEY_BASE>
-PHX_SERVER=true
 ```
 
 This file will provide all the necessary environment variables for the Docker containers.
+
+And this is a example for `docker-compose`
+
+```yaml
+budget:
+  build: .
+  restart: always
+  ports:
+    - "4000:4000"
+  environment:
+    DATABASE_URL: ecto://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}
+    PHOENIX_HOST: ${PHOENIX_HOST}
+    SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+    JWT_SECRET: ${JWT_SECRET}
+    PHX_SERVER: true
+  depends_on:
+    - db
+```
 
 ---
 
