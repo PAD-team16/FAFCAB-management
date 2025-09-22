@@ -36,98 +36,528 @@ The diagram above illustrates the microservices architecture designed for the FA
 
 ## **1. User Management Service**
 
-Handles user registration, authentication, and synchronization with the FAF Community Discord server.
+A Spring Boot microservice for user authentication and management as part of the **FAFCAB Cabinet Management Platform**.
 
-### **Responsibilities**
+## Tech Stack
 
-- Register new users via Discord OAuth.
-- Sync user roles (student, teacher, admin) from the FAF Discord server.
-- Issue JWTs upon successful login for use with other services.
+- **Java 21** with Spring Boot 3.x
+- **PostgreSQL** for data persistence
+- **JWT** for authentication tokens
+- **Docker** for containerization
+- **Swagger/OpenAPI** for API documentation
 
-### **Endpoints**
+## Responsibilities
 
-**Login and Create User**
+- User authentication and JWT token generation
+- User profile management (CRUD operations)
+- Role-based user filtering and queries
+- Integration with other platform microservices
 
+## API Endpoints
+
+### Authentication
+
+**User Login**
 - `POST /api/auth/login`
-  - **Description:** Authenticates a user with their Discord token, creates a user profile if one doesn't exist, and returns a JWT.
+  - **Description:** Authenticates a user with username and returns a JWT token.
   - **Payload:**
     ```json
     {
-      "discord_token": "<user_discord_oauth_token>"
+      "username": "john_doe"
     }
     ```
   - **Success Response (200 OK):**
     ```json
     {
       "jwt": "<jwt_token>",
-      "user_id": "user-uuid-123",
+      "userId": "123e4567-e89b-12d3-a456-426614174000",
       "roles": ["student", "FAF_NGO_Member"]
     }
     ```
+  - **Error Response (404 Not Found):** User not found
 
-**Get User Information**
+### User Management
 
-- `GET /api/users/{user_id}`
+**Get All Users**
+- `GET /api/users?limit=1000`
+  - **Description:** Retrieves a paginated list of all users.
+  - **Headers:** `Authorization: Bearer <jwt>`
+  - **Query Parameters:**
+    - `limit` (optional): Maximum number of users to return (default: 1000)
 
-  - **Description:** Retrieves public information for a specific user.
+**Get User by ID**
+- `GET /api/users/{userId}`
+  - **Description:** Retrieves a specific user by their UUID.
   - **Headers:** `Authorization: Bearer <jwt>`
   - **Success Response (200 OK):**
     ```json
     {
-      "user_id": "user-uuid-123",
-      "nickname": "faf_user",
-      "group": "FAF-211",
+      "id": "123e4567-e89b-12d3-a456-426614174000",
+      "username": "john_doe",
+      "email": "john.doe@example.com",
       "roles": ["student", "FAF_NGO_Member"]
     }
     ```
 
-- `GET /api/users?limit=1000`
-
-  - **Description:** Provides a list of all users.
+**Create User**
+- `POST /api/users`
+  - **Description:** Creates a new user in the system.
   - **Headers:** `Authorization: Bearer <jwt>`
+  - **Payload:**
+    ```json
+    {
+      "username": "new_user",
+      "email": "new.user@example.com",
+      "roles": ["student"]
+    }
+    ```
 
-- `GET /api/users/admins?limit=1000`
-
-  - **Description:** Returns a list of all users with the 'admin' role.
+**Delete User**
+- `DELETE /api/users/{userId}`
+  - **Description:** Deletes a user from the system.
   - **Headers:** `Authorization: Bearer <jwt>`
+  - **Success Response:** 204 No Content
 
-- `GET /api/users/teachers?limit=1000`
-  - **Description:** Returns a list of all users with the 'teacher' role.
+**Get Users by Role**
+- `GET /api/users/role/{role}?limit=1000`
+  - **Description:** Retrieves all users with a specific role.
   - **Headers:** `Authorization: Bearer <jwt>`
+  - **Path Parameters:**
+    - `role`: Role name (e.g., "admin", "teacher", "student")
+  - **Query Parameters:**
+    - `limit` (optional): Maximum number of users to return (default: 1000)
+
+## Development Setup
+
+### Prerequisites
+- Java 21
+- Docker and Docker Compose
+- Maven
+
+### Local Development
+
+1. **Clone the repository**
+2. **Start the database:**
+   ```bash
+   docker-compose up postgres
+   ```
+
+3. **Run the application:**
+   ```bash
+   ./mvnw spring-boot:run
+   ```
+
+### Docker Deployment
+
+**Build and run with Docker Compose:**
+```bash
+docker-compose up --build
+```
+
+The service will be available at `http://localhost:8080`
+
+## API Documentation
+
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
+- **OpenAPI Docs:** `http://localhost:8080/api-docs`
+
+## Configuration
+
+Key configuration properties (see `application.yml`):
+
+- **Database:** PostgreSQL connection settings
+- **JWT:** Secret key and token expiration
+- **API:** Base path configuration (`/api`)
+- **Server:** Port 8080
+
+Environment variables for Docker:
+- `JWT_SECRET`: JWT signing secret
+- `JWT_EXPIRATION`: Token expiration time in milliseconds
+
+## Database Schema
+
+The service uses PostgreSQL with the following main entities:
+- **users**: Main user table with UUID primary key
+- **user_roles**: Role assignments for users
+
+## Integration
+
+This microservice integrates with other FAFCAB Cabinet Management Platform services through:
+- JWT token validation for inter-service communication
+- Shared user identification via UUID
+- Role-based authorization for platform features
 
 ---
 
 ## **2. Notification Service**
 
-Responsible for sending notifications to users and groups via Discord.
+A Spring Boot microservice for sending email and Discord notifications as part of the **FAFCAB Cabinet Management Platform**.
 
-### **Responsibilities**
+## Tech Stack
 
-- Send targeted messages to individual users or groups (e.g., admins).
-- Manage Discord channel creation for direct messages.
+- **Java 21** with Spring Boot 3.x
+- **Spring Mail** for email integration
+- **JavaMail API** for SMTP email sending
+- **Docker** for containerization
+- **MailHog** for email testing
+- **Swagger/OpenAPI** for API documentation
 
-### **Endpoints**
+## Responsibilities
 
-**Send Notification**
+- Sending email notifications via SMTP
+- Managing Discord bot interactions and message sending
+- Handling message templating and formatting
+- Providing a consistent API for various notification channels
+- Error handling for failed notification attempts
 
-- `POST /api/notifications`
-  - **Description:** Sends a message to specified users or groups. The service handles the logic of finding or creating the correct Discord channels.
-  - **Headers:** `Authorization: Bearer <jwt>`
+## API Endpoints
+
+### Email Notifications
+
+**Send Email**
+- `POST /api/email/send`
+  - **Description:** Sends an email notification to a specified recipient.
   - **Payload:**
     ```json
     {
-      "users": ["user-uuid-123", "user-uuid-456"],
-      "groups": ["admins"],
-      "message": "Heads up: The tea supply is running low!"
+      "to": "recipient@example.com",
+      "message": "Your notification message here"
     }
     ```
-  - **Success Response (202 Accepted):**
+  - **Success Response (200 OK):** "Email sent successfully"
+  - **Error Response (500 Internal Server Error):** "Failed to send email: [error message]"
+
+### Discord Notifications
+
+**Send Message to General Channel**
+- `POST /api/discord/send`
+  - **Description:** Sends a message to the configured general Discord channel.
+  - **Payload:**
     ```json
     {
-      "status": "Notification request queued successfully."
+      "message": "Your notification message here"
     }
     ```
+  - **Success Response (200 OK):** "Message sent successfully!"
 
+**Send Message to Specific Channel**
+- `POST /api/discord/send/{channelId}`
+  - **Description:** Sends a message to a specific Discord channel.
+  - **Path Parameters:**
+    - `channelId`: Discord channel ID (e.g., "123456789012345678")
+  - **Payload:**
+    ```json
+    {
+      "message": "Your notification message here"
+    }
+    ```
+  - **Success Response (200 OK):** "Message sent to channel successfully!"
+
+**Mention a Discord Role**
+- `POST /api/discord/send/mention-role`
+  - **Description:** Sends a message with a role mention in a specific Discord channel.
+  - **Payload:**
+    ```json
+    {
+      "channelId": "123456789012345678",
+      "roleId": "123456789012345678",
+      "message": "Your notification message here"
+    }
+    ```
+  - **Success Response (200 OK):** "Role mentioned!"
+
+**Mention a Discord User**
+- `POST /api/discord/send/mention-user`
+  - **Description:** Sends a message with a user mention in a specific Discord channel.
+  - **Payload:**
+    ```json
+    {
+      "channelId": "123456789012345678",
+      "userId": "123456789012345678",
+      "message": "Your notification message here"
+    }
+    ```
+  - **Success Response (200 OK):** "User mentioned!"
+
+**Mention Everyone**
+- `POST /api/discord/send/mention-everyone`
+  - **Description:** Sends a message with @everyone mention in a specific Discord channel.
+  - **Payload:**
+    ```json
+    {
+      "channelId": "123456789012345678",
+      "message": "Your notification message here"
+    }
+    ```
+  - **Success Response (200 OK):** "Everyone mentioned!"
+
+**Mention Here**
+- `POST /api/discord/send/mention-here`
+  - **Description:** Sends a message with @here mention in a specific Discord channel.
+  - **Payload:**
+    ```json
+    {
+      "channelId": "123456789012345678",
+      "message": "Your notification message here"
+    }
+    ```
+  - **Success Response (200 OK):** "Here mentioned!"
+
+**Mention Multiple Users**
+- `POST /api/discord/send/mention-multiple-users`
+  - **Description:** Sends a message with multiple user mentions in a specific Discord channel.
+  - **Payload:**
+    ```json
+    {
+      "channelId": "123456789012345678",
+      "userIds": ["123456789012345678", "987654321098765432"],
+      "message": "Your notification message here"
+    }
+    ```
+  - **Success Response (200 OK):** "Multiple users mentioned!"
+
+**Mention Role by Name**
+- `POST /api/discord/send/mention-role-by-name`
+  - **Description:** Sends a message with a role mention using role name in a specific Discord channel.
+  - **Payload:**
+    ```json
+    {
+      "channelId": "123456789012345678",
+      "roleName": "admin",
+      "message": "Your notification message here"
+    }
+    ```
+  - **Success Response (200 OK):** "Role mentioned by name!"
+
+## Development Setup
+
+### Prerequisites
+
+- Java 21
+- Maven 3.6+
+- Docker & Docker Compose
+- Gmail account with App Password (for production SMTP)
+
+### Local Development
+
+1. **Clone the repository**
+
+2. **Set up environment variables:**
+   
+   Create a `.env` file in the project root:
+   ```env
+   EMAIL_USERNAME=your_email@gmail.com
+   EMAIL_PASSWORD=your_app_password
+   DISCORD_BOT_TOKEN=your_discord_bot_token
+   DISCORD_GENERAL_CHANNEL_ID=your_discord_general_channel_id
+   ```
+
+3. **Run the application:**
+   ```bash
+   mvn spring-boot:run
+   ```
+
+### Docker Deployment
+
+**Option 1: Using Docker Compose (Recommended for Team Development)**
+
+```bash
+docker-compose up --build
+```
+
+This will start:
+- **Notification Service** on `http://localhost:8090`
+- **MailHog** (Email testing tool) on `http://localhost:8025`
+
+**Option 2: Manual Docker Build**
+
+```bash
+# Build the image
+docker build -t notification-service .
+
+# Run the container
+docker run -p 8090:8090 \
+  -e EMAIL_USERNAME=your_email@gmail.com \
+  -e EMAIL_PASSWORD=your_app_password \
+  -e DISCORD_BOT_TOKEN=your_discord_bot_token \
+  -e DISCORD_GENERAL_CHANNEL_ID=your_discord_general_channel_id \
+  notification-service
+```
+
+## API Documentation
+
+- **Swagger UI:** `http://localhost:8090/swagger-ui.html`
+- **OpenAPI Docs:** `http://localhost:8090/api-docs`
+
+## Configuration
+
+### Email Configuration
+
+The application uses the following SMTP configuration:
+
+- **Host**: smtp.gmail.com (configurable via `SPRING_MAIL_HOST`)
+- **Port**: 587 (configurable via `SPRING_MAIL_PORT`)
+- **Authentication**: Enabled
+- **STARTTLS**: Enabled
+- **Connection timeout**: 5000ms
+- **Read/Write timeout**: 5000ms
+
+### Discord Configuration
+
+- **Bot Token**: Set via `DISCORD_BOT_TOKEN` environment variable
+- **General Channel ID**: Set via `DISCORD_GENERAL_CHANNEL_ID` environment variable
+
+### Environment Variables
+
+**Required:**
+```bash
+EMAIL_USERNAME=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+```
+
+**For Discord functionality:**
+```bash
+DISCORD_BOT_TOKEN=your_discord_bot_token
+DISCORD_GENERAL_CHANNEL_ID=your_discord_general_channel_id
+```
+
+**Optional:**
+```bash
+SPRING_MAIL_HOST=smtp.gmail.com  # Default: smtp.gmail.com
+SPRING_MAIL_PORT=587             # Default: 587
+```
+
+#### Windows Setup:
+
+**Option 1: .env file (recommended for development)**
+
+Create a `.env` file in the project root:
+```env
+EMAIL_USERNAME=your_email@gmail.com
+EMAIL_PASSWORD=your_app_password
+DISCORD_BOT_TOKEN=your_discord_bot_token
+DISCORD_GENERAL_CHANNEL_ID=your_discord_general_channel_id
+```
+
+**Option 2: Command Prompt (temporary)**
+```cmd
+set EMAIL_USERNAME=your_email@gmail.com
+set EMAIL_PASSWORD=your_app_password
+```
+
+**Option 3: PowerShell (temporary)**
+```powershell
+$env:EMAIL_USERNAME="your_email@gmail.com"
+$env:EMAIL_PASSWORD="your_app_password"
+```
+
+**Option 4: Permanent**
+```cmd
+setx EMAIL_USERNAME "your_email@gmail.com"
+setx EMAIL_PASSWORD "your_app_password"
+```
+*Note: Restart your IDE/terminal after setting permanent variables*
+
+### Gmail App Password Setup
+
+1. Enable 2-Factor Authentication on your Gmail account
+2. Go to Google Account settings → Security → App passwords
+3. Generate a new app password for "Mail"
+4. Use this app password (not your regular password) as `EMAIL_PASSWORD`
+
+## Testing with MailHog
+
+MailHog is included for testing email functionality without sending real emails:
+
+- **Web UI:** `http://localhost:8025`
+- **SMTP Server:** `localhost:1025`
+
+To use MailHog instead of Gmail, modify your `.env`:
+```env
+EMAIL_USERNAME=test@example.com
+EMAIL_PASSWORD=any_password
+SPRING_MAIL_HOST=mailhog
+SPRING_MAIL_PORT=1025
+```
+
+## Team Development Workflow
+
+### For Team Members Using This Service
+
+1. **Start the notification service:**
+   ```bash
+   cd notification-service
+   docker-compose up -d
+   ```
+
+2. **Use the service in your microservice:**
+   ```bash
+   # Send a test email
+   curl -X POST http://localhost:8090/api/email/send \
+     -H "Content-Type: application/json" \
+     -d '{"to": "test@example.com", "message": "Test from my service"}'
+   ```
+
+3. **Check sent emails:**
+   - Open `http://localhost:8025` to see all sent emails
+   - No real emails are sent when using MailHog
+
+### For Production Deployment
+
+Replace MailHog configuration with real SMTP settings in your deployment environment.
+
+## Project Structure
+
+```
+notification-service/
+├── src/
+│   └── main/
+│       ├── java/faf/cmp/notification_service/
+│       │   ├── controller/
+│       │   │   ├── EmailController.java       # Email API endpoints
+│       │   │   └── DiscordController.java     # Discord API endpoints
+│       │   ├── service/
+│       │   │   ├── EmailService.java          # Email sending logic
+│       │   │   └── DiscordService.java        # Discord interaction logic
+│       │   ├── request/
+│       │   │   ├── SendEmailRequest.java      # Email request DTOs
+│       │   │   ├── MessageRequest.java        # Discord message request
+│       │   │   ├── MentionRequest.java        # Discord mention request
+│       │   │   └── MultipleUsersRequest.java  # Discord multiple users request
+│       │   ├── dto/
+│       │   │   ├── ErrorResponse.java         # Error response DTO
+│       │   │   └── SuccessResponse.java       # Success response DTO
+│       │   └── NotificationServiceApplication.java
+│       └── resources/
+│           └── application.yml                # Application configuration
+├── docker-compose.yml                         # Docker services
+├── Dockerfile                                 # Container build
+├── .env                                       # Environment variables
+└── README.md
+```
+
+## Error Handling
+
+The service includes comprehensive error handling:
+
+- Invalid email addresses
+- SMTP connection failures
+- Authentication errors
+- Network timeouts
+- Discord API errors
+- Channel/user/role not found errors
+
+All errors are logged and returned as HTTP responses with descriptive messages.
+
+## Integration
+
+This microservice integrates with other FAFCAB Cabinet Management Platform services by:
+
+- Providing a consistent API for triggering notifications
+- Supporting various notification channels (email, Discord)
+- Handling the communication with external services (SMTP, Discord API)
+- Isolating notification logic from other business logic
+- Offering reliable delivery with proper error handling
 ---
 
 ## **3. Tea Management Service**
