@@ -1,0 +1,335 @@
+{
+	"info": {
+		"_postman_id": "dd87afbd-3dc6-406c-87a7-0e3ad0ce9a37",
+		"name": "Budget-Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30341916"
+	},
+	"item": [
+		{
+			"name": "Add Budget",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"entity\": \"Acme Corp\",\n  \"affiliation\": \"Partner\",\n  \"amount\": 1200,\n  \"created_by\": \"ud0012an\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/budget",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Budget",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"logs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs (csv)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/logs?csv=True",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"logs"
+					],
+					"query": [
+						{
+							"key": "csv",
+							"value": "True"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Debt",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"responsable\": \"user_dumbass3\",\n  \"created_by\": \"ud0012an\",\n  \"amount\": 1500\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/debt",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"debt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Debt",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/debt",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"debt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Debt (responsable)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/debt?responsable_id=user_dumbass2",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"debt"
+					],
+					"query": [
+						{
+							"key": "responsable_id",
+							"value": "user_dumbass2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/debt/logs",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"debt",
+						"logs"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs (resonsable)",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoidXNlcjEyMyJ9.YKFeQyGqcnhJY1oG7y1gYPEWJILPBAW0oo827i32eHY",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/debt/logs?responsable_id=user_dumbass2",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"debt",
+						"logs"
+					],
+					"query": [
+						{
+							"key": "responsable_id",
+							"value": "user_dumbass2"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": ""
+		}
+	]
+}
