@@ -1,0 +1,158 @@
+{
+	"info": {
+		"_postman_id": "dd87afbd-3dc6-406c-87a7-0e3ad0ce9a37",
+		"name": "Budget-Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30341916"
+	},
+	"item": [
+		{
+			"name": "Add Budget",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"entity\": \"Acme Corp\",\n  \"affiliation\": \"Partner\",\n  \"amount\": 1200,\n  \"created_by\": \"ud0012an\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/budget",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Budget",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs (csv)",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Add Debt",
+			"request": {
+				"method": "POST",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Debt",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/debts",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"debts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Debt (responsable)",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Get Logs (resonsable)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/budget/debt/logs?responsable_id=user_dumbass2",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"budget",
+						"debt",
+						"logs"
+					],
+					"query": [
+						{
+							"key": "responsable_id",
+							"value": "user_dumbass2"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:4000"
+		}
+	]
+}

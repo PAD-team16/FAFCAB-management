@@ -420,9 +420,51 @@ A digital bulletin board for items lost or found in the university.
 
 ---
 
-## **8. Budgeting Service**
+## **Budgeting Service**
 
 Tracks FAF Cab finances, including donations, expenses, and user debts.
+
+### **Docker**
+
+To set up the environment, create a `.env` file in the **same directory** as your `docker-compose.yml` with the following contents:
+
+```env
+POSTGRES_USER=<POSTGRES_USER>
+POSTGRES_PASSWORD=<POSTGRES_PASSWORD>
+POSTGRES_DB=<POSTGRES_DB>
+POSTGRES_HOST=<POSTGRES_HOST>
+JWT_SECRET=<JWT_SECRET>
+
+PHOENIX_HOST=<PHOENIX_HOST>
+SECRET_KEY_BASE=<SECRET_KEY_BASE>
+```
+
+This file will provide all the necessary environment variables for the Docker containers.
+
+And this is a example for `docker-compose`
+
+```yaml
+budget:
+  build: .
+  restart: always
+  ports:
+    - "4000:4000"
+  environment:
+    DATABASE_URL: ecto://${POSTGRES_USER}:${POSTGRES_PASSWORD}@${POSTGRES_HOST}/${POSTGRES_DB}
+    PHOENIX_HOST: ${PHOENIX_HOST}
+    SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+    JWT_SECRET: ${JWT_SECRET}
+    PHX_SERVER: true
+  depends_on:
+    - db
+```
+
+---
+
+### **Docker Hub**
+
+The service is available on Docker Hub:
+[https://hub.docker.com/r/vmmmmv/budget](https://hub.docker.com/r/vmmmmv/budget)
 
 ### **Responsibilities**
 
@@ -434,18 +476,25 @@ Tracks FAF Cab finances, including donations, expenses, and user debts.
 
 **Get Budget Logs**
 
+- `GET /api/budget`
+
+  - **Description:** Returns the current budget.
+
 - `GET /api/budget/logs`
 
   - **Description:** Returns all budget logs.
 
 - `GET /api/budget/logs?csv=true`
+
   - **Description:** Returns a CSV report of budget logs. This endpoint is only accessible to admins.
 
 **Record a Transaction**
 
 - `POST /api/budget`
+
   - **Description:** Adds a new financial transaction to the budget. This endpoint is only accessible to admins.
   - **Payload:**
+
     ```json
     {
       "entity": "user_id or partner name",
@@ -457,8 +506,10 @@ Tracks FAF Cab finances, including donations, expenses, and user debts.
 **Add to Debt Book**
 
 - `POST /api/budget/debt`
+
   - **Description:** Adds a new debt entry for a user. This endpoint is only accessible to admins.
   - **Payload:**
+
     ```json
     {
       "responsable_id": "user-uuid-123",
@@ -469,9 +520,25 @@ Tracks FAF Cab finances, including donations, expenses, and user debts.
 
 **Get User Debt**
 
-- `GET /api/budget/debt/{responsable_id}`
+- `GET /api/budget/debt`
+
+  - **Description:** Retrieves the total debt
+  - **Headers:** `Authorization: Bearer <jwt>` (Admin)
+
+- `GET /api/budget/debt?responsable_id={id}`
+
   - **Description:** Retrieves the debt for a specific user. Accessible by admins or the user themselves.
   - **Headers:** `Authorization: Bearer <jwt>` (Admin or the user themselves)
+
+**Get Debt Logs**
+
+- `GET /api/budget/debt/logs`
+
+  - **Description:** Returns all debt logs. Accessible only by admins.
+
+- `GET /api/budget/debt/logs?responsable_id={id}`
+
+  - **Description:** Returns debt logs for a specific user. Accessible by admins or the user themselves.
 
 ---
 
