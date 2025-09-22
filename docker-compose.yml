@@ -144,6 +144,88 @@ services:
       - fafcab_network
     restart: unless-stopped
 
+  # Fundraising Service
+  fundraising-service:
+    image: fundraising-service-custom
+    container_name: fafcab_fundraising_service
+    ports:
+      - "8085:8081"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+  # Cab Booking Service
+  cab-booking-service:
+    image: cab-booking-service-custom
+    container_name: fafcab_cab_booking_service
+    ports:
+      - "3000:3000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Checkin Service
+  checkin-service:
+    image: checkin-service-custom
+    container_name: fafcab_checkin_service
+    ports:
+      - "3003:3003"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - JWT_SECRET=${JWT_SECRET}
+      - PORT=3003
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:${PORT:-3003}/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Sharing Service
+  sharing-service:
+    image: sharing-service-custom
+    container_name: fafcab_sharing_service
+    ports:
+      - "8086:8082"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    restart: unless-stopped
+
+
 volumes:
   postgres_data:
 
