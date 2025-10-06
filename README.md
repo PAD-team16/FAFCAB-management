@@ -30,7 +30,7 @@ Microservices are implemented using multiple technologies to optimize performanc
 
 # Architectural Diagram of Microservices operation
 
-![microserv](https://github.com/user-attachments/assets/2c87e83c-0a08-4641-9613-bbea49de16f1)
+<img width="2192" height="1111" alt="architecture drawio" src="https://github.com/user-attachments/assets/f42eb1fb-24df-4aa6-9843-5b041f2568d7" />
 
 The diagram above illustrates the microservices architecture designed for the FAFCab system. It highlights how different services, such as Notification Service, Communication Service, Budgeting Service, Fund Raising Service, Tea Management Service, and User Management Service, interact with each other through the API Gateway and Service Registry. Each service is responsible for a specific function, ranging from financial tracking and consumable management to user check-ins, booking, and lost-and-found operations. The modular design ensures that responsibilities are clearly separated, making the system scalable, maintainable, and easier to extend with new features as needed.
 
