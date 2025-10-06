@@ -1,0 +1,529 @@
+{
+	"info": {
+		"_postman_id": "a1b2c3d4-e5f6-7890-abcd-123456789012",
+		"name": "FAFCAB User Management Service",
+		"description": "API collection for testing the User Management Service endpoints of the FAFCAB Cabinet Management Platform",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "12345678"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    pm.environment.set('jwt_token', responseJson.jwt);",
+									"    pm.environment.set('user_id', responseJson.user_id);",
+									"    pm.test('JWT token received', function () {",
+									"        pm.expect(responseJson.jwt).to.be.a('string');",
+									"    });",
+									"    pm.test('User ID received', function () {",
+									"        pm.expect(responseJson.user_id).to.be.a('string');",
+									"    });",
+									"} else {",
+									"    pm.test('Login failed with expected error', function () {",
+									"        pm.expect(pm.response.code).to.be.oneOf([404, 400]);",
+									"    });",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"{{test_username}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate a user with username and receive JWT token and user ID"
+					},
+					"response": [
+						{
+							"name": "Successful Login",
+							"originalRequest": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"username\": \"john_doe\"\n}"
+								},
+								"url": {
+									"raw": "{{base_url}}/api/auth/login",
+									"host": [
+										"{{base_url}}"
+									],
+									"path": [
+										"api",
+										"auth",
+										"login"
+									]
+								}
+							},
+							"status": "OK",
+							"code": 200,
+							"_postman_previewlanguage": "json",
+							"header": [
+								{
+									"key": "Content-Type",
+									"value": "application/json"
+								}
+							],
+							"cookie": [],
+							"body": "{\n    \"jwt\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user_id\": \"345678901234567890\"\n}"
+						}
+					]
+				},
+				{
+					"name": "Login using Discord Oauth2",
+					"request": {
+						"method": "POST",
+						"url": {
+							"raw": "{{base_url}}/api/auth/login/discord",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login",
+								"discord"
+							]
+						},
+						"description": "Login using Discord OAuth2 token to create or retrieve user and receive JWT token"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user login and token generation"
+		},
+		{
+			"name": "User Management",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users?limit={{page_limit}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "{{page_limit}}"
+								}
+							]
+						},
+						"description": "Retrieve a paginated list of all users in the system. Requires JWT authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{user_id}}"
+							]
+						},
+						"description": "Retrieve a specific user by their UUID. Uses the user_id from login response."
+					},
+					"response": []
+				},
+				{
+					"name": "Create User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"id\": \"678901234567890123\",\n    \"username\": \"new_test_user\",\n    \"globalName\": \"New Test User\",\n    \"discriminator\": \"9999\",\n    \"email\": \"new.test@example.com\",\n    \"avatar\": \"new_avatar_hash\",\n    \"bot\": false,\n    \"nick\": \"Test User\",\n    \"roles\": []\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Create a new user in the system with Discord user structure."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/{{delete_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"{{delete_user_id}}"
+							]
+						},
+						"description": "Delete a user from the system. Update delete_user_id variable with actual user ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users by Role",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/users/role/{{role_name}}?limit={{page_limit}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"role",
+								"{{role_name}}"
+							],
+							"query": [
+								{
+									"key": "limit",
+									"value": "{{page_limit}}"
+								}
+							]
+						},
+						"description": "Get all users with 'student' role"
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints for CRUD operations"
+		},
+		{
+			"name": "Role Management",
+			"item": [
+				{
+					"name": "Get All Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/roles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles"
+							]
+						},
+						"description": "Retrieve all roles in the system"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Role by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/roles/{{role_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles",
+								"{{role_id}}"
+							]
+						},
+						"description": "Get a specific role by its ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Role by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/roles/name/{{role_name}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"roles",
+								"name",
+								"{{role_name}}"
+							]
+						},
+						"description": "Get the role by name"
+					},
+					"response": []
+				}
+			],
+			"description": "Role management endpoints for querying role information"
+		},
+		{
+			"name": "Health & Documentation",
+			"item": [
+				{
+					"name": "Service Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Check if the User Management Service is running and healthy"
+					},
+					"response": []
+				},
+				{
+					"name": "Get OpenAPI Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api-docs",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api-docs"
+							]
+						},
+						"description": "Get the OpenAPI 3.0 specification for the User Management Service"
+					},
+					"response": []
+				},
+				{
+					"name": "Access Swagger UI",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/swagger-ui.html",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"swagger-ui.html"
+							]
+						},
+						"description": "Access the interactive Swagger UI for testing APIs"
+					},
+					"response": []
+				}
+			],
+			"description": "Service health checks and API documentation endpoints"
+		},
+		{
+			"name": "Discord Integration",
+			"item": [
+				{
+					"name": "Get Guild Members",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/discord/members",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"discord",
+								"members"
+							]
+						},
+						"description": "Retrieve all guild members from Discord API"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Guild Member by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/discord/member/{{discord_user_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"discord",
+								"member",
+								"{{discord_user_id}}"
+							]
+						},
+						"description": "Get a specific guild member by Discord user ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Guild Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/discord/roles",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"discord",
+								"roles"
+							]
+						},
+						"description": "Retrieve all guild roles from Discord API"
+					},
+					"response": []
+				}
+			],
+			"description": "Discord API integration endpoints for guild member and role management"
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"// This runs before every request in the collection"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global test script",
+					"// This runs after every request in the collection"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}
