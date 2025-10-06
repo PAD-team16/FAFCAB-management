@@ -1229,6 +1229,57 @@ Keeps track of shared, reusable items like board games, chargers, and books.
     }
     ```
 
+---
+
+## **11. FAFCAB Gateway**
+
+The FAFCAB Gateway is the single entry point for all client requests, a reverse proxy that routes them to the appropriate backend microservice. It handles cross-cutting concerns such as authentication, rate limiting, and SSL termination. It also acts as a WebSocket proxy for real-time communication services.
+
+### Tech Stack
+
+- **Python 3.10** with FastAPI
+- **Redis** for caching and rate limiting
+- **uv** for package management
+
+### Responsibilities
+
+- **Request Routing:** Routes incoming HTTP and WebSocket requests to the correct microservice based on the URL path.
+- **Authentication:** Validates JWT tokens for all incoming requests, by communicating with the user-management service
+- **SSL/TLS Termination:** Handles HTTPS and WSS by default.
+- **WebSocket Proxy:** Proxies WebSocket connections to backend services.
+- **Configuration:** Managed via a `settings.yaml` file.
+
+### Running the Gateway
+
+**Locally**
+
+1.  **Sync uv project:**
+    ```bash
+    uv sync
+    ```
+2.  **Activate virtual environment:**
+    ```bash
+    source .venv/bin/activate
+    ```
+3.  **Run Redis:**
+    ```bash
+    docker-compose up redis
+    ```
+4.  **Run the gateway:**
+    ```bash
+    python src/main.py
+    ```
+
+**With Docker**
+
+```bash
+docker-compose up fafcab-gateway --build -d
+```
+
+**Important Note for Docker Users:**
+
+When running the gateway in Docker, backend services on the host machine must be addressed using `host.docker.internal` instead of `localhost` in the `settings.yaml` file.
+
 ## Branch Structure
 
 ### Main Branches

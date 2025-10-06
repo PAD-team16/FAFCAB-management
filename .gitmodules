@@ -29,3 +29,6 @@
 [submodule "notification-service"]
 	path = notification-service
 	url = https://github.com/yaeby/notification-service.git
+[submodule "fafcab-gateway"]
+	path = fafcab-gateway
+	url = https://github.com/PAD-team16/fafcab-gateway
