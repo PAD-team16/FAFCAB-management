@@ -1,0 +1,90 @@
+auth:
+  enabled: true
+  auth_service_url: "http://localhost:8080/api/auth/validate"
+  
+  # Routes that don't require authentication
+  public_routes:
+    - "/api/auth/login"
+    - "/api/auth/register"
+    - "/api/auth/refresh"
+    - "/api/auth/login/discord"
+
+    # Add public WebSocket routes here if needed:
+    # - "/ws/public"
+
+app:
+  host: "0.0.0.0"
+  port: 8000
+  ssl:
+    certfile: "cert.pem"
+    keyfile: "key.pem"
+  backend_service_timeout: 10
+
+  routes:
+
+    # modify `localhost` to `host.docker.internal` if running the app using docker compose
+    # e.g. "http://host.docker.internal:8080" instead of "http://localhost:8080"
+
+    # user-management-service endpoints 
+    /api/auth: "http://user-management-service:8080"
+    /api/users: "http://user-management-service:8080"
+    /api/roles: "http://user-management-service:8080"
+
+    # notification-service endpoints
+    /api/email/send: "http://notification-service:8090"
+    /api/discord/send: "http://notification-service:8090"
+    /api/sse/send: "http://notification-service:8090"
+    /api/sse/subscribe: "http://notification-service:8090"
+
+    /api/budget: "http://fafcab_budgeting_service:8080"
+    /api/lostnfound: "http://fafcab_lostnfound_service:8080"
+    /ws/lostnfound: "ws://fafcab_lostnfound_service:8080/ws/lostnfound/websocket"
+
+    /api/consumables/health: http://fafcab_consumables_service:8080
+    /api/consumables/health/db: http://fafcab_consumables_service:8080
+    /api/consumables/test/generate-token/:user_id: http://fafcab_consumables_service:8080
+    /api/consumables: http://fafcab_consumables_service:8080
+    /api/consumables/:id: http://fafcab_consumables_service:8080
+
+    /api/communication/health: http://fafcab_communication_service:8089
+    /api/communication/health/db: http://fafcab_communication_service:8089
+    /api/communication/search: http://fafcab_communication_service:8089
+    /api/communication/channels: http://fafcab_communication_service:8089
+    /api/communication/channels/:channel_id: http://fafcab_communication_service:8089
+    /ws/communication/channels/: ws://fafcab_communication_service:8089/ws/communication/channels
+
+    /api/sharing: "http://sharing-service:8080"
+    /api/fundraising: "http://fundraising-service:8080"
+
+    # (vl4d09)
+    /api/cab-booking: "http://fafcab_cab_booking_service:8080"
+    /api/checkin: "http://fafcab_checkin_service:8080"
+
+  skip_headers:
+    - host
+    - connection
+    - keep-alive
+    - proxy-authenticate
+    - proxy-authorization
+    - te
+    - trailers
+    - transfer-encoding
+    - upgrade
+    - authorization  
+
+cache:
+  enabled: true
+  default_ttl: 300      # 5 minutes for general GET requests
+  token_ttl: 3600       # 1 hour for token/auth requests
+  user_ttl: 900         # 15 minutes for user data
+  
+  cacheable_methods: ["GET"]
+  
+  no_cache_patterns:
+    - "/api/orders"     
+
+redis:
+  host: "redis"
+  port: 6379
+  db: 0
+  timeout: 5
