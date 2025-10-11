@@ -1,0 +1,243 @@
+services:
+  gateway:
+    image: vmmmmv/gateway:latest
+    container_name: fafcab_gateway
+    environment:
+      PORT: 8000
+      HOST: 0.0.0.0
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    volumes:
+      - ./settings.yaml:/app/settings.yaml
+      - ./cert.pem:/app/cert.pem:ro
+      - ./key.pem:/app/key.pem:ro
+    depends_on:
+      - redis
+      - postgres
+      - communication-service
+      - consumables-service
+      - budgeting-service
+      - lostnfound-service
+      - user-management-service
+      - notification-service
+      - fundraising-service
+      - sharing-service
+      - checkin-service
+    networks:
+      - fafcab_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: fafcab_redis
+    volumes:
+      - redis_data:/data
+    networks:
+      - fafcab_network
+
+  postgres:
+    image: postgres:15
+    container_name: fafcab_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fafcab_network
+    command: >
+      bash -c "
+        echo 'CREATE DATABASE \"${POSTGRES_DB_1}\";' > /docker-entrypoint-initdb.d/01-create-dbs.sql &&
+        echo 'CREATE DATABASE \"${POSTGRES_DB_2}\";' >> /docker-entrypoint-initdb.d/01-create-dbs.sql &&
+        exec docker-entrypoint.sh postgres
+      "
+      
+
+  communication-service:
+    image: huntrese/communication-service:latest
+    container_name: fafcab_communication_service
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_2}
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    # restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8089/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  consumables-service:
+    image: huntrese/consumables-service:latest
+    container_name: fafcab_consumables_service
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_2}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - PORT=8080
+      - PHX_SERVER=true
+      - PHX_HOST=localhost
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+
+  budgeting-service:
+    image: vmmmmv/budget:latest
+    container_name: fafcab_budgeting_service
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - PHX_HOST=${PHX_HOST}
+      - PHX_SERVER=${PHX_SERVER}
+      - PORT=8080
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+
+  lostnfound-service:
+    image: vmmmmv/lostnfound:latest
+    container_name: fafcab_lostnfound_service
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+      - PHX_HOST=${PHX_HOST}
+      - PHX_SERVER=${PHX_SERVER}
+      - PORT=8080
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+
+  user-management-service:
+    image: yaeby/user-management-service:latest
+    container_name: user-management-service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SERVER_PORT=8080
+    env_file:
+      - .env
+    ports:
+      - "8080:8080"
+    networks:
+      - fafcab_network
+
+  # NOTIFICATION SERVICE
+  notification-service:
+    image: yaeby/notification-service:latest
+    container_name: notification-service
+    environment:
+      - SERVER_PORT=8090
+    env_file:
+      - .env
+    ports:
+      - "8090:8090"
+    networks:
+      - fafcab_network
+
+  fundraising-service:
+    image: pavel28/fundraising-service
+    container_name: fafcab_fundraising_service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
+      - SERVER_PORT=8080
+      - NOTIFICATION_URL=${NOTIFICATION_URL}
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    
+  sharing-service:
+    image: pavel28/sharing-service
+    container_name: fafcab_sharing_service
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=create-drop
+      - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
+      - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
+      - SERVER_PORT=8080
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+
+  cab-booking-service:
+    image: vl4d09/cab-booking-service
+    container_name: fafcab_cab_booking_service
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_1}
+      - PORT=8080
+    depends_on:
+      - postgres
+    networks:
+      - fafcab_network
+    # restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  checkin-service:
+    image: vl4d09/checkin-service
+    container_name: fafcab_checkin_service
+    environment:
+      - DATABASE_URL=postgresql://checkin_user:checkin_pass@checkin-db:5432/checkin_service
+      - PORT=8080
+    depends_on:
+      checkin-db:
+        condition: service_healthy
+    networks:
+      - fafcab_network
+    healthcheck:
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:${PORT:-8080}/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))\""]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+
+  checkin-db:
+    image: postgres:15-alpine
+    platform: linux/amd64
+    container_name: checkin-postgres
+    environment:
+      POSTGRES_DB: checkin_service
+      POSTGRES_USER: checkin_user
+      POSTGRES_PASSWORD: checkin_pass
+    volumes:
+      - checkin_data:/var/lib/postgresql/data
+      - ./checkin-init-scripts:/docker-entrypoint-initdb.d  
+
+    networks:
+      - fafcab_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U checkin_user -d checkin_service"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data:
+  redis_data:
+  checkin_data: 
+    driver: local
+
+networks:
+  fafcab_network:
+    driver: bridge

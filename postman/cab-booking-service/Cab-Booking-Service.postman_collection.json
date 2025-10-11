@@ -1,0 +1,541 @@
+{
+  "info": {
+    "name": "Cab Booking Service - Complete Test Suite",
+    "description": "Complete API collection for the FAF Cab room booking microservice with all test scenarios",
+    "version": "2.0.0",
+    "_postman_id": "cab-booking-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{auth_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "test-user-123",
+      "type": "string"
+    },
+    {
+      "key": "user_id_2",
+      "value": "another-user-456",
+      "type": "string"
+    },
+    {
+      "key": "test_date",
+      "value": "{{$isoTimestamp}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🏥 Health & Setup",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Health check returns 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Health check contains status', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('status', 'healthy');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Generate Test Token (User 1)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('auth_token', response.token);",
+                  "    console.log('✅ Token saved for User 1');",
+                  "    pm.test('Token generated successfully', function () {",
+                  "        pm.expect(response.token).to.be.a('string');",
+                  "        pm.expect(response.token.length).to.be.greaterThan(10);",
+                  "    });",
+                  "} else {",
+                  "    console.log('❌ Token generation failed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"email\": \"test1@faf.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/test/generate-token",
+              "host": ["{{base_url}}"],
+              "path": ["test", "generate-token"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "✅ Valid Bookings",
+      "item": [
+        {
+          "name": "Create MAINROOM Booking (Morning)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Booking created successfully', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Response contains booking details', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('id');",
+                  "    pm.expect(response.place).to.equal('MAINROOM');",
+                  "    pm.expect(response.time_slot).to.equal('9:00-9:30');",
+                  "    pm.expect(response.status).to.equal('ACTIVE');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"place\": \"MAINROOM\",\n  \"user_id\": \"{{user_id}}\",\n  \"time_slot\": \"9:00-9:30\",\n  \"description\": \"Team morning standup\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        },
+        {
+          "name": "Create KITCHEN Booking (Lunch)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Kitchen booking created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test('Kitchen booking details correct', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.place).to.equal('KITCHEN');",
+                  "    pm.expect(response.time_slot).to.equal('12:00-13:00');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"place\": \"KITCHEN\",\n  \"user_id\": \"{{user_id}}\",\n  \"time_slot\": \"12:00-13:00\",\n  \"description\": \"Team lunch preparation\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "❌ Validation Tests",
+      "item": [
+        {
+          "name": "Invalid Place Name",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid place rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error message present', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('error', 'Validation error');",
+                  "    pm.expect(response.details).to.include('place');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"place\": \"INVALID_ROOM\",\n  \"user_id\": \"{{user_id}}\",\n  \"time_slot\": \"9:00-10:00\",\n  \"description\": \"This should fail\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Time Format",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid time format rejected', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Time format error message', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.details).to.include('time_slot');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"place\": \"MAINROOM\",\n  \"user_id\": \"{{user_id}}\",\n  \"time_slot\": \"invalid-time\",\n  \"description\": \"Invalid time format test\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔒 Authentication Tests",
+      "item": [
+        {
+          "name": "No Token - Should Fail",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Unauthorized without token', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Auth error message', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.include('token');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"place\": \"MAINROOM\",\n  \"user_id\": \"{{user_id}}\",\n  \"time_slot\": \"10:00-11:00\",\n  \"description\": \"This should fail - no auth\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "⚡ Conflict Tests",
+      "item": [
+        {
+          "name": "Create Base Booking for Conflict Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Base booking created', function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"place\": \"MAINROOM\",\n  \"user_id\": \"{{user_id}}\",\n  \"time_slot\": \"11:00-12:00\",\n  \"description\": \"Base booking for conflict testing\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        },
+        {
+          "name": "Test Exact Time Conflict",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Conflict detected', function () {",
+                  "    pm.response.to.have.status(409);",
+                  "});",
+                  "",
+                  "pm.test('Conflict error message', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.include('conflict');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"place\": \"MAINROOM\",\n  \"user_id\": \"{{user_id_2}}\",\n  \"time_slot\": \"11:00-12:00\",\n  \"description\": \"This should conflict with existing booking\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📋 Data Retrieval",
+      "item": [
+        {
+          "name": "Get All Bookings",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Bookings retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is array of bookings', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.be.an('array');",
+                  "    if (response.length > 0) {",
+                  "        pm.expect(response[0]).to.have.property('id');",
+                  "        pm.expect(response[0]).to.have.property('place');",
+                  "        pm.expect(response[0]).to.have.property('time_slot');",
+                  "        pm.expect(response[0]).to.have.property('status');",
+                  "    }",
+                  "});",
+                  "",
+                  "console.log('📊 Total bookings found:', pm.response.json().length);"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/bookings",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧹 Cleanup & Maintenance",
+      "item": [
+        {
+          "name": "Manual Cleanup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Cleanup executed successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Cleanup success message', function () {",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include('Cleanup completed');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/bookings/cleanup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "bookings", "cleanup"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Set up long description variable for testing",
+          "const longDescription = 'a'.repeat(501);",
+          "pm.collectionVariables.set('long_description', longDescription);",
+          "",
+          "// Set current date for date filtering tests",
+          "const today = new Date().toISOString().split('T')[0];",
+          "pm.collectionVariables.set('today_date', today);",
+          "",
+          "// Log current test info",
+          "console.log('🧪 Running:', pm.info.requestName);",
+          "console.log('📅 Test Date:', today);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test result logging",
+          "if (pm.response.code >= 200 && pm.response.code < 300) {",
+          "    console.log('✅ Request successful:', pm.response.code);",
+          "} else if (pm.response.code >= 400) {",
+          "    console.log('⚠️ Expected error response:', pm.response.code);",
+          "} else {",
+          "    console.log('❌ Unexpected response:', pm.response.code);",
+          "}",
+          "",
+          "// Log response time for monitoring",
+          "if (pm.response.responseTime > 1000) {",
+          "    console.log('🐌 Slow response detected:', pm.response.responseTime + 'ms');",
+          "}"
+        ]
+      }
+    }
+  ]
+}

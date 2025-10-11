@@ -1,0 +1,1159 @@
+{
+  "info": {
+    "name": "Check-in Service API - Complete Collection",
+    "description": "Complete API testing for Check-in Service - CCTV simulation, occupant tracking, guest management, and security alerts. Answers the most important question: WHO HAS THE KEY?",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "2.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3003",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "550e8400-e29b-41d4-a716-446655440001",
+      "type": "string"
+    },
+    {
+      "key": "adminUserId", 
+      "value": "550e8400-e29b-41d4-a716-446655440003",
+      "type": "string"
+    },
+    {
+      "key": "guestUserId",
+      "value": "550e8400-e29b-41d4-a716-446655440002",
+      "type": "string"
+    },
+    {
+      "key": "regularUserId",
+      "value": "550e8400-e29b-41d4-a716-446655440004",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "email",
+      "value": "vlad@faf.com",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔧 0. Setup & Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Service is healthy', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('healthy');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Generate Token (COPY TOKEN!)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('authToken', response.token);",
+                  "    pm.test('Token generated successfully', () => {",
+                  "        pm.expect(response.token).to.be.a('string');",
+                  "        pm.expect(response.token.length).to.be.greaterThan(50);",
+                  "    });",
+                  "    console.log('🔑 Token generated and saved to collection variables');",
+                  "} else {",
+                  "    pm.test('Token generation failed', () => {",
+                  "        pm.response.to.have.status(200);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{userId}}\",\n  \"email\": \"{{email}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/test/generate-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["test", "generate-token"]
+            }
+          }
+        },
+        {
+          "name": "Generate Admin Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.collectionVariables.set('adminToken', response.token);",
+                  "    pm.test('Admin token generated successfully', () => {",
+                  "        pm.expect(response.token).to.be.a('string');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{adminUserId}}\",\n  \"email\": \"admin@faf.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/test/generate-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["test", "generate-token"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔑 1. Key Status (MOST IMPORTANT!)",
+      "item": [
+        {
+          "name": "WHO HAS THE KEY? 🔑 (Universe Question)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Key status response is valid', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('key_status');",
+                  "    pm.expect(response).to.have.property('answer_to_universe');",
+                  "    pm.expect(response).to.have.property('key_holders_inside');",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "console.log('🔑 ANSWER TO UNIVERSE: ' + response.answer_to_universe);",
+                  "console.log('📊 Key holders inside: ' + response.key_holders_inside);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/key-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "key-status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📹 2. CCTV Simulation (Entry Detection)",
+      "item": [
+        {
+          "name": "Admin User Enters (Key Holder)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin recognized and logged', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('recognized');",
+                  "    pm.expect(response.user.has_key).to.be.true;",
+                  "});",
+                  "",
+                  "console.log('🔑 Admin with key entered the facility');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{adminUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{adminUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Regular User Enters (Key Holder)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User recognized and logged', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('recognized');",
+                  "});",
+                  "",
+                  "console.log('👤 Regular user entered the facility');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Guest User Enters",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Guest user recognized', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('recognized');",
+                  "});",
+                  "",
+                  "console.log('🎫 Guest user entered the facility');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{guestUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{guestUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "🚨 Unknown Person Detected (Security Alert)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Unknown person detected and logged', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('unknown');",
+                  "    pm.expect(response.message).to.include('Unknown person detected');",
+                  "});",
+                  "",
+                  "console.log('🚨 SECURITY ALERT: Unknown person detected!');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/unknown-intruder-999",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "unknown-intruder-999"]
+            }
+          }
+        },
+        {
+          "name": "🚨 Another Unknown Person",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/suspicious-person-abc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "suspicious-person-abc"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "👥 3. Guest Management",
+      "item": [
+        {
+          "name": "Register Guest - Alice Johnson",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Guest registered successfully', () => {",
+                  "    pm.response.to.have.status(201);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include('Guest registered successfully');",
+                  "    pm.expect(response.guest.name).to.eql('Alice Johnson');",
+                  "});",
+                  "",
+                  "console.log('👥 Guest Alice Johnson registered');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_user\": \"Alice Johnson\",\n  \"user_id\": \"{{userId}}\",\n  \"time_slot\": \"14:00-14:30\",\n  \"description\": \"Study session with friend\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "Register Guest - Bob Wilson",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_user\": \"Bob Wilson\",\n  \"user_id\": \"{{adminUserId}}\",\n  \"time_slot\": \"15:00-15:30\",\n  \"description\": \"Project meeting\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "Register Guest - Carol Smith",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_user\": \"Carol Smith\",\n  \"user_id\": \"{{userId}}\",\n  \"time_slot\": \"16:00-16:30\",\n  \"description\": \"Code review session\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "Guest Check-in - Alice Arrives",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Guest checked in successfully', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include('Guest checked in successfully');",
+                  "});",
+                  "",
+                  "console.log('✅ Alice Johnson checked in');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest_name\": \"Alice Johnson\",\n  \"time_slot\": \"14:00-14:30\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/guests/checkin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "guests", "checkin"]
+            }
+          }
+        },
+        {
+          "name": "Guest Check-in - Bob Arrives",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest_name\": \"Bob Wilson\",\n  \"time_slot\": \"15:00-15:30\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/guests/checkin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "guests", "checkin"]
+            }
+          }
+        },
+        {
+          "name": "❌ Try Duplicate Guest Registration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Duplicate guest registration should fail', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.include('already registered');",
+                  "});",
+                  "",
+                  "console.log('❌ Duplicate registration correctly prevented');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_user\": \"Alice Johnson\",\n  \"user_id\": \"{{userId}}\",\n  \"time_slot\": \"14:00-14:30\",\n  \"description\": \"Duplicate attempt\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "❌ Try Duplicate Guest Check-in",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Duplicate guest check-in should fail', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.include('already checked in');",
+                  "});",
+                  "",
+                  "console.log('❌ Duplicate check-in correctly prevented');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"guest_name\": \"Alice Johnson\",\n  \"time_slot\": \"14:00-14:30\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/guests/checkin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "guests", "checkin"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚪 4. Entry/Exit Tracking",
+      "item": [
+        {
+          "name": "Get Current Occupants (Before Exits)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Current occupants retrieved', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response).to.have.property('current_occupants');",
+                  "    pm.expect(response).to.have.property('summary');",
+                  "    pm.expect(response).to.have.property('answer_to_universe');",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "console.log('👥 Current occupants: ' + response.summary.total_occupants);",
+                  "console.log('🔑 ' + response.answer_to_universe);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "Regular User Exits",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('User exit logged successfully', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include('Exit logged successfully');",
+                  "});",
+                  "",
+                  "console.log('🚪 Regular user exited');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{userId}}/exit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{userId}}", "exit"]
+            }
+          }
+        },
+        {
+          "name": "🚨 CRITICAL: Admin Exits (Key Holder Leaving!)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin exit logged successfully', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.message).to.include('Exit logged successfully');",
+                  "});",
+                  "",
+                  "console.log('🚨 CRITICAL: Admin (key holder) exited!');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{adminUserId}}/exit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{adminUserId}}", "exit"]
+            }
+          }
+        },
+        {
+          "name": "Guest User Exits",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{guestUserId}}/exit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{guestUserId}}", "exit"]
+            }
+          }
+        },
+        {
+          "name": "🚨 Check Key Status After Admin Exit (ALERT!)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('No key holders alert generated', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    if (response.key_holders_inside === 0) {",
+                  "        pm.expect(response.answer_to_universe).to.include('Nobody');",
+                  "        console.log('🚨 SECURITY ALERT: No key holders inside!');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/key-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "key-status"]
+            }
+          }
+        },
+        {
+          "name": "Get Current Occupants (After Exits)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "console.log('👥 Remaining occupants: ' + response.summary.total_occupants);",
+                  "console.log('🎫 Active guests: ' + response.summary.total_guests);",
+                  "console.log('🔑 ' + response.answer_to_universe);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "❌ Try Exit User Already Gone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Exit for already gone user should fail', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.include('not currently inside');",
+                  "});",
+                  "",
+                  "console.log('❌ Duplicate exit correctly prevented');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{userId}}/exit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{userId}}", "exit"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔄 5. Recovery & Re-entry",
+      "item": [
+        {
+          "name": "Key Holder Re-enters (Security Restored)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Key holder re-entry successful', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('recognized');",
+                  "    pm.expect(response.user.has_key).to.be.true;",
+                  "});",
+                  "",
+                  "console.log('🔑 Key holder returned - security restored!');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{guestUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{guestUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Verify Security Restored",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Security status restored', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.key_holders_inside).to.be.greaterThan(0);",
+                  "});",
+                  "",
+                  "const response = pm.response.json();",
+                  "console.log('✅ Security restored: ' + response.answer_to_universe);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/key-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "key-status"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "❌ 6. Error & Validation Tests",
+      "item": [
+        {
+          "name": "Invalid Token Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid token rejected', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.include('Unauthorized');",
+                  "});",
+                  "",
+                  "console.log('❌ Invalid token correctly rejected');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "invalid-token-here",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/key-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "key-status"]
+            }
+          }
+        },
+        {
+          "name": "Missing Authorization Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Missing authorization rejected', () => {",
+                  "    pm.response.to.have.status(401);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.include('Access token is missing');",
+                  "});",
+                  "",
+                  "console.log('❌ Missing authorization correctly rejected');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/key-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "key-status"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Guest Data Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid guest data rejected', () => {",
+                  "    pm.response.to.have.status(400);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.error).to.exist;",
+                  "});",
+                  "",
+                  "console.log('❌ Invalid guest data correctly rejected');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_user\": \"\",\n  \"user_id\": \"invalid-uuid\",\n  \"time_slot\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "Invalid UUID Format Test",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Invalid UUID handled correctly', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('unknown');",
+                  "});",
+                  "",
+                  "console.log('✅ Invalid UUID correctly treated as unknown person');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/not-a-valid-uuid-123",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "not-a-valid-uuid-123"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🧪 7. Stress & Edge Cases",
+      "item": [
+        {
+          "name": "Rapid Sequential Check-ins",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/{{adminUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "{{adminUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Multiple Unknown Persons",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/intruder-alpha-001",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "intruder-alpha-001"]
+            }
+          }
+        },
+        {
+          "name": "Another Unknown Person",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/intruder-beta-002",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "intruder-beta-002"]
+            }
+          }
+        },
+        {
+          "name": "Mass Guest Registration",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_user\": \"David Miller\",\n  \"user_id\": \"{{adminUserId}}\",\n  \"time_slot\": \"17:00-17:30\",\n  \"description\": \"Large group meeting\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "Long Guest Name Test",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"temp_user\": \"Alexander Christopher Wellington Montgomery III\",\n  \"user_id\": \"{{userId}}\",\n  \"time_slot\": \"18:00-18:30\",\n  \"description\": \"Very long name test case\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 8. Final Status & Reporting",
+      "item": [
+        {
+          "name": "Final Occupancy Report",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "console.log('📊 FINAL FACILITY STATUS:');",
+                  "console.log('👥 Total occupants: ' + response.summary.total_occupants);",
+                  "console.log('🎫 Total guests: ' + response.summary.total_guests);",
+                  "console.log('✅ Checked-in guests: ' + response.summary.checked_in_guests);",
+                  "console.log('🔒 Key status: ' + response.summary.key_status);",
+                  "console.log('');",
+                  "console.log('🌟 ' + response.answer_to_universe);",
+                  "",
+                  "pm.test('Final status retrieved successfully', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(response).to.have.property('answer_to_universe');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins"]
+            }
+          }
+        },
+        {
+          "name": "Final Key Status (THE ANSWER!)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "console.log('🔑 FINAL ANSWER TO THE UNIVERSE:');",
+                  "console.log(response.answer_to_universe);",
+                  "console.log('');",
+                  "console.log('🏁 Check-in Service testing completed successfully!');",
+                  "",
+                  "pm.test('THE ANSWER TO THE UNIVERSE PROVIDED', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(response.answer_to_universe).to.include('key');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/checkins/key-status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "checkins", "key-status"]
+            }
+          }
+        },
+        {
+          "name": "Service Health Final Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Service remains healthy after testing', () => {",
+                  "    pm.response.to.have.status(200);",
+                  "    const response = pm.response.json();",
+                  "    pm.expect(response.status).to.eql('healthy');",
+                  "});",
+                  "",
+                  "console.log('✅ Service health confirmed - Grade 5 microservice operational!');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-set auth token if available",
+          "if (pm.collectionVariables.get('authToken')) {",
+          "    pm.request.headers.add({",
+          "        key: 'Authorization',",
+          "        value: 'Bearer ' + pm.collectionVariables.get('authToken')",
+          "    });",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test for response time",
+          "pm.test('Response time is reasonable', () => {",
+          "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+          "});",
+          "",
+          "// Global test for no server errors",
+          "if (pm.response.code >= 500) {",
+          "    pm.test('No server errors', () => {",
+          "        pm.response.to.not.have.status(500);",
+          "    });",
+          "}"
+        ]
+      }
+    }
+  ]
+}
