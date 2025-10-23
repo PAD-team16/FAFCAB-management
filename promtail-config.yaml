@@ -1,0 +1,73 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # Scrape logs from Docker containers with the logging=promtail label
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 5s
+        filters:
+          - name: label
+            values: ["logging=promtail"]
+    
+    relabel_configs:
+      # Use container name as job label
+      - source_labels: ['__meta_docker_container_name']
+        regex: '/(.*)'
+        target_label: 'job'
+      
+      # Add container ID
+      - source_labels: ['__meta_docker_container_id']
+        target_label: 'container_id'
+      
+      # Add container image
+      - source_labels: ['__meta_docker_container_image']
+        target_label: 'image'
+      
+      # Add custom job name from label if present
+      - source_labels: ['__meta_docker_container_label_logging_jobname']
+        target_label: 'job'
+      
+      # Add container log stream (stdout/stderr)
+      - source_labels: ['__meta_docker_container_log_stream']
+        target_label: 'stream'
+    
+    # Pipeline stages to parse JSON logs
+    pipeline_stages:
+      # Try to parse as JSON
+      - json:
+          expressions:
+            timestamp: timestamp
+            level: level
+            message: message
+            event: event
+            request_id: request_id
+            method: method
+            path: path
+            status: status
+            duration_ms: duration_ms
+            user_id: user_id
+            error_type: error_type
+            error_message: error_message
+            context: context
+      
+      # Use timestamp from log if available
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+          fallback_formats:
+            - RFC3339Nano
+      
+      # Add labels from JSON fields
+      - labels:
+          level:
+          event:
+          stream:

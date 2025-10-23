@@ -61,6 +61,7 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_2}
     depends_on:
       - postgres
+      - loki
     networks:
       - fafcab_network
     # restart: unless-stopped
@@ -70,6 +71,9 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    labels:
+      logging: "promtail"
+      logging_jobname: "communication-service"
 
   consumables-service:
     image: huntrese/consumables-service:latest
@@ -232,11 +236,58 @@ services:
       timeout: 10s
       retries: 3
 
+  # Observability Stack for Service Logging
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: fafcab_loki
+    user: root
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-local-config.yaml:/etc/loki/loki-local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/loki-local-config.yaml -log.level=warn
+    networks:
+      - fafcab_network
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: fafcab_promtail
+    volumes:
+      - ./promtail-config.yaml:/etc/promtail/promtail-config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+    command: -config.file=/etc/promtail/promtail-config.yaml
+    networks:
+      - fafcab_network
+    depends_on:
+      - loki
+
+  grafana:
+    image: grafana/grafana:10.4.0
+    container_name: fafcab_grafana
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+      - GF_LOG_LEVEL=warn
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - loki
+    networks:
+      - fafcab_network
+
 volumes:
   postgres_data:
   redis_data:
   checkin_data: 
     driver: local
+  loki_data:
+  grafana_data:
 
 networks:
   fafcab_network:
