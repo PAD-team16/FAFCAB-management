@@ -86,8 +86,12 @@ services:
       - PHX_HOST=localhost
     depends_on:
       - postgres
+      - loki
     networks:
       - fafcab_network
+    labels:
+      logging: "promtail"
+      logging_jobname: "consumables-service"
 
   budgeting-service:
     image: vmmmmv/budget:latest
