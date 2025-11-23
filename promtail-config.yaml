@@ -9,7 +9,6 @@ clients:
   - url: http://loki:3100/loki/api/v1/push
 
 scrape_configs:
-  # Scrape logs from Docker containers with the logging=promtail label
   - job_name: docker
     docker_sd_configs:
       - host: unix:///var/run/docker.sock
@@ -18,31 +17,39 @@ scrape_configs:
           - name: label
             values: ["logging=promtail"]
     
+
     relabel_configs:
-      # Use container name as job label
+      # --- Extract and define ONLY the labels we want ---
+
+      # 1. Set 'job' from Compose service if available
+      - source_labels: ['__meta_docker_container_label_com_docker_compose_service']
+        target_label: 'container_service'
+
+      # 2. Set 'job' as container name (without leading '/')
       - source_labels: ['__meta_docker_container_name']
         regex: '/(.*)'
         target_label: 'job'
-      
-      # Add container ID
+
+      # 3. Add container_id (useful for debugging)
       - source_labels: ['__meta_docker_container_id']
         target_label: 'container_id'
-      
-      # Add container image
-      - source_labels: ['__meta_docker_container_image']
-        target_label: 'image'
-      
-      # Add custom job name from label if present
-      - source_labels: ['__meta_docker_container_label_logging_jobname']
-        target_label: 'job'
-      
-      # Add container log stream (stdout/stderr)
+
+      # 4. Add log stream (stdout/stderr)
       - source_labels: ['__meta_docker_container_log_stream']
         target_label: 'stream'
-    
-    # Pipeline stages to parse JSON logs
+
+  
+
+      # --- CRITICAL: DROP all Docker labels to prevent compose_project, service_name, etc. ---
+      - action: labeldrop
+        regex: '__meta_docker_container_label_.+'
+
+      # --- Drop all other discovery metadata ---
+      - action: labeldrop
+        regex: '__meta.*'
+
     pipeline_stages:
-      # Try to parse as JSON
+      # Parse JSON logs
       - json:
           expressions:
             timestamp: timestamp
@@ -58,16 +65,23 @@ scrape_configs:
             error_type: error_type
             error_message: error_message
             context: context
-      
+
+      - labelallow:
+          - level
+          - event
+          - container_service
+          - job
+          - container_id
+          - stream
+
       # Use timestamp from log if available
       - timestamp:
           source: timestamp
           format: RFC3339
           fallback_formats:
             - RFC3339Nano
-      
-      # Add labels from JSON fields
+
+      # Promote only these JSON fields as labels
       - labels:
           level:
           event:
-          stream:

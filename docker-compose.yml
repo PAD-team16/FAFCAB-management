@@ -1,10 +1,38 @@
+
+name: fafcab
+x-with-wrapper: &with-wrapper
+  volumes:
+    - ./docker-entrypoint-scaled.sh:/scaling-wrapper.sh:ro
+  entrypoint: ["/scaling-wrapper.sh"]   # wrapper becomes ENTRYPOINT
+
+
 services:
+
+
+
+
+  service-discovery:
+    container_name: fafcab_service_discovery
+    image: vmmmmv/service-discovery:latest
+    restart: unless-stopped
+    ports:
+      - "8002:8001"
+    volumes:
+      - ./settings.yaml:/app/settings.yaml
+    networks:
+      - fafcab_network
+    labels:
+      logging: "promtail"
+
+      
   gateway:
-    image: vmmmmv/gateway:latest
     container_name: fafcab_gateway
+    image: vmmmmv/gateway:latest
     environment:
       PORT: 8000
       HOST: 0.0.0.0
+    env_file:
+      - .env
     ports:
       - "8000:8000"
       - "8001:8001"
@@ -13,12 +41,13 @@ services:
       - ./cert.pem:/app/cert.pem:ro
       - ./key.pem:/app/key.pem:ro
     depends_on:
+      - service-discovery
       - redis
       - postgres
       - communication-service
       - consumables-service
       - budgeting-service
-      - lostnfound-service
+      # - lostnfound-service
       - user-management-service
       - notification-service
       - fundraising-service
@@ -29,7 +58,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: fafcab_redis
     volumes:
       - redis_data:/data
     networks:
@@ -55,104 +83,151 @@ services:
       
 
   communication-service:
+    <<: *with-wrapper          
     image: huntrese/communication-service:latest
-    container_name: fafcab_communication_service
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_2}
+      - PORT=8089
+      - SERVICE_DISCOVERY_URL=http://fafcab_service_discovery:8001
+      - COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-fafcab}
     depends_on:
+      - service-discovery
       - postgres
       - loki
     networks:
       - fafcab_network
-    # restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8089/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
     labels:
       logging: "promtail"
-      logging_jobname: "communication-service"
+
 
   consumables-service:
     image: huntrese/consumables-service:latest
-    container_name: fafcab_consumables_service
+    volumes:
+      # Mount wrapper script to auto-detect container name
+      - ./docker-entrypoint-scaled.sh:/scaling-wrapper.sh:ro
+    entrypoint: ["/bin/sh", "/scaling-wrapper.sh"]
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_2}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - PORT=8080
       - PHX_SERVER=true
       - PHX_HOST=localhost
+      - SERVICE_DISCOVERY_URL=http://fafcab_service_discovery:8001
     depends_on:
+      - service-discovery
       - postgres
       - loki
     networks:
       - fafcab_network
     labels:
       logging: "promtail"
-      logging_jobname: "consumables-service"
+
 
   budgeting-service:
+    <<: *with-wrapper         
     image: vmmmmv/budget:latest
-    container_name: fafcab_budgeting_service
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - PHX_HOST=${PHX_HOST}
       - PHX_SERVER=${PHX_SERVER}
       - PORT=8080
+      - SERVICE_PORT=8080
+      - SERVICE_DISCOVERY_URL=http://fafcab_service_discovery:8001/api/services
     depends_on:
+      - service-discovery
       - postgres
     networks:
       - fafcab_network
+    labels:
+      logging: "promtail"
+
+# lostnfound-service:
+#     image: vmmmmv/lostnfound:latest
+#     container_name: fafcab_lostnfound_service
+#     environment:
+#       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+#       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+#       - PHX_HOST=${PHX_HOST}
+#       - PHX_SERVER=${PHX_SERVER}
+#       - PORT=8080
+#       - SERVICE_NAME=lostnfound-service
+#       - SERVICE_HOST=lostnfound-service
+#       - SERVICE_PORT=8080
+#       - SERVICE_DISCOVERY_URL=http://service_discovery:8001/api/services
+#     depends_on:
+#       - postgres
+#     networks:
+#       - fafcab_network
+#     # logging:
+#     #   driver: loki
+#     #   options:
+#     #     loki-url: "http://localhost:3100/loki/api/v1/push"
+
+
 
   lostnfound-service:
+    <<: *with-wrapper         
     image: vmmmmv/lostnfound:latest
-    container_name: fafcab_lostnfound_service
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
       - PHX_HOST=${PHX_HOST}
       - PHX_SERVER=${PHX_SERVER}
       - PORT=8080
+      - SERVICE_PORT=8080
+      - SERVICE_DISCOVERY_URL=http://fafcab_service_discovery:8001
+      - SERVICE_NAME=lostnfound-service
     depends_on:
+      - service-discovery
       - postgres
     networks:
       - fafcab_network
-
+    labels:
+      logging: "promtail"
+      
   user-management-service:
+    <<: *with-wrapper         
     image: yaeby/user-management-service:latest
-    container_name: user-management-service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
       - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SERVER_PORT=8080
+      - DISCOVERY_URL=http://fafcab_service_discovery:8001
     env_file:
       - .env
-    ports:
-      - "8080:8080"
+    depends_on:
+      - service-discovery
     networks:
       - fafcab_network
+    labels:
+      logging: "promtail"
+
 
   # NOTIFICATION SERVICE
   notification-service:
+    <<: *with-wrapper         
     image: yaeby/notification-service:latest
-    container_name: notification-service
     environment:
       - SERVER_PORT=8090
+      - DISCOVERY_URL=http://fafcab_service_discovery:8001
+    depends_on:
+      - service-discovery
     env_file:
       - .env
-    ports:
-      - "8090:8090"
     networks:
       - fafcab_network
+    labels:
+      logging: "promtail"
+    deploy:
+      mode: replicated
+      replicas: 3  # Number of desired replicas
 
   fundraising-service:
+    <<: *with-wrapper         
     image: pavel28/fundraising-service
-    container_name: fafcab_fundraising_service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
@@ -162,14 +237,18 @@ services:
       - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
       - SERVER_PORT=8080
       - NOTIFICATION_URL=${NOTIFICATION_URL}
+      - SERVICE_DISCOVERY_URL=http://fafcab_service_discovery:8001
     depends_on:
+      - service-discovery
       - postgres
     networks:
       - fafcab_network
+    labels:
+      logging: "promtail"
     
   sharing-service:
+    <<: *with-wrapper         
     image: pavel28/sharing-service
-    container_name: fafcab_sharing_service
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/${POSTGRES_DB}
       - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
@@ -178,52 +257,51 @@ services:
       - SPRING_JPA_DATABASE_PLATFORM=org.hibernate.dialect.PostgreSQLDialect
       - SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA=public
       - SERVER_PORT=8080
+      - DISCOVERY_URL=http://fafcab_service_discovery:8001
     depends_on:
+      - service-discovery
       - postgres
     networks:
       - fafcab_network
+    labels:
+      logging: "promtail"
 
   cab-booking-service:
     image: vl4d09/cab-booking-service
-    container_name: fafcab_cab_booking_service
     environment:
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB_1}
       - PORT=8080
+      - SERVICE_DISCOVERY_URL=http://fafcab_service_discovery:8001
+      - SERVICE_HOST=cab-booking-service
     depends_on:
+      - service-discovery
       - postgres
     networks:
       - fafcab_network
-    # restart: unless-stopped
-    healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })\""]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+    labels:
+      logging: "promtail"
 
   checkin-service:
     image: vl4d09/checkin-service
-    container_name: fafcab_checkin_service
     environment:
       - DATABASE_URL=postgresql://checkin_user:checkin_pass@checkin-db:5432/checkin_service
       - PORT=8080
+      - SERVICE_DISCOVERY_URL=http://fafcab_service_discovery:8001
+      - SERVICE_HOST=checkin-service
     depends_on:
+      service-discovery:
+        condition: service_started
       checkin-db:
         condition: service_healthy
     networks:
       - fafcab_network
-    healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:${PORT:-8080}/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))\""]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+    labels:
+      logging: "promtail"
 
 
   checkin-db:
     image: postgres:15-alpine
     platform: linux/amd64
-    container_name: checkin-postgres
     environment:
       POSTGRES_DB: checkin_service
       POSTGRES_USER: checkin_user
@@ -239,11 +317,22 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+    labels:
+      logging: "promtail"
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "1025:1025"  # SMTP port
+      - "8025:8025"  # Web UI port
+    logging:
+      driver: "none"
+    networks:
+      - fafcab_network
 
   # Observability Stack for Service Logging
   loki:
     image: grafana/loki:3.0.0
-    container_name: fafcab_loki
     user: root
     ports:
       - "3100:3100"
@@ -256,7 +345,6 @@ services:
 
   promtail:
     image: grafana/promtail:3.0.0
-    container_name: fafcab_promtail
     volumes:
       - ./promtail-config.yaml:/etc/promtail/promtail-config.yaml
       - /var/run/docker.sock:/var/run/docker.sock
@@ -269,7 +357,6 @@ services:
 
   grafana:
     image: grafana/grafana:10.4.0
-    container_name: fafcab_grafana
     environment:
       - GF_SECURITY_ADMIN_USER=${GRAFANA_USER:-admin}
       - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
