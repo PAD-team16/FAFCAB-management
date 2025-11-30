@@ -1,0 +1,119 @@
+{
+  "timestamp": "2025-11-30T23:18:47.603396",
+  "tables": {
+    "users": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "consumables": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "communication": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "booking": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "budget": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "debts": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "sharing_items": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "sharing_logs": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "checkins": {
+      "row_count": 2,
+      "column_count": 10,
+      "quality_score": 70.0,
+      "null_percentage": 30.0,
+      "issues": [
+        "High null value percentage: 30.00%"
+      ]
+    },
+    "temp_guests": {
+      "row_count": 2,
+      "column_count": 10,
+      "quality_score": 90.0,
+      "null_percentage": 10.0,
+      "issues": [
+        "High null value percentage: 10.00%"
+      ]
+    },
+    "fundraising_campaigns": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "fundraising_donations": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "lostnfound_posts": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    },
+    "lostnfound_comments": {
+      "row_count": 0,
+      "column_count": 0,
+      "quality_score": 0,
+      "issues": [
+        "Empty dataset - no data extracted (schema may not exist or no data present)"
+      ]
+    }
+  }
+}

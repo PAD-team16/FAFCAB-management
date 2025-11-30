@@ -372,6 +372,92 @@ services:
     networks:
       - fafcab_network
 
+  # Data Warehouse Database
+  data-warehouse:
+    image: postgres:15
+    container_name: fafcab_data_warehouse
+    environment:
+      POSTGRES_USER: ${DW_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${DW_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${DW_POSTGRES_DB}
+    volumes:
+      - dw_data:/var/lib/postgresql/data
+      - ./data-warehouse/dw-schema.sql:/docker-entrypoint-initdb.d/01-dw-schema.sql
+    ports:
+      - "5433:5432"
+    networks:
+      - fafcab_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DW_POSTGRES_USER} -d ${DW_POSTGRES_DB}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ETL Pipeline Service
+  etl-pipeline:
+    build:
+      context: ./data-warehouse
+      dockerfile: Dockerfile
+    container_name: fafcab_etl_pipeline
+    environment:
+      - DW_POSTGRES_HOST=data-warehouse
+      - DW_POSTGRES_PORT=5432
+      - DW_POSTGRES_DB=${DW_POSTGRES_DB}
+      - DW_POSTGRES_USER=${DW_POSTGRES_USER}
+      - DW_POSTGRES_PASSWORD=${DW_POSTGRES_PASSWORD}
+      # Source database connections
+      - SOURCE_MAIN_DB_HOST=postgres
+      - SOURCE_MAIN_DB_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      # Check-in service database connections
+      - SOURCE_CHECKIN_DB_HOST=checkin-db
+      - SOURCE_CHECKIN_DB_PORT=5432
+      - SOURCE_CHECKIN_DB_NAME=checkin_service
+      - SOURCE_CHECKIN_DB_USER=checkin_user
+      - SOURCE_CHECKIN_DB_PASSWORD=checkin_pass
+      # Additional database configurations
+      - POSTGRES_DB_1=${POSTGRES_DB_1}
+      - POSTGRES_DB_2=${POSTGRES_DB_2}
+      # ETL configuration
+      - SCHEDULER_INTERVAL_MINUTES=${SCHEDULER_INTERVAL_MINUTES}
+    volumes:
+      - ./data-warehouse/etl-logs:/app/logs
+    depends_on:
+      data-warehouse:
+        condition: service_healthy
+    networks:
+      - fafcab_network
+
+  # ETL Monitoring API
+  etl-api:
+    build:
+      context: ./data-warehouse
+      dockerfile: Dockerfile.api
+    container_name: fafcab_etl_api
+    environment:
+      - DW_POSTGRES_HOST=data-warehouse
+      - DW_POSTGRES_PORT=5432
+      - DW_POSTGRES_DB=${DW_POSTGRES_DB}
+      - DW_POSTGRES_USER=${DW_POSTGRES_USER}
+      - DW_POSTGRES_PASSWORD=${DW_POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB_1=${POSTGRES_DB_1}
+      - POSTGRES_DB_2=${POSTGRES_DB_2}
+      - API_PORT=8000
+    ports:
+      - "8003:8000"
+    volumes:
+      - ./data-warehouse/etl-logs:/app/logs
+    depends_on:
+      data-warehouse:
+        condition: service_healthy
+    networks:
+      - fafcab_network
+
 volumes:
   postgres_data:
   redis_data:
@@ -379,6 +465,8 @@ volumes:
     driver: local
   loki_data:
   grafana_data:
+  dw_data:
+    driver: local
 
 networks:
   fafcab_network:
