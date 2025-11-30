@@ -82,7 +82,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "count(count by(job) (count_over_time({container_service=\"consumables-service\", job=~\"$job\"} [24h])))",
+          "expr": "count(count by(job) (count_over_time({container_service=\"notification-service\", job=~\"$job\"} [24h])))",
           "refId": "A"
         }
       ],
@@ -143,7 +143,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": " ( \n  sum(count_over_time({container_service=\"consumables-service\", job=~\"$job\"} | json | level=\"error\" [24h]))  /  sum(count_over_time({container_service=\"consumables-service\", job=~\"$job\"} | json  [24h]))) or vector(0)",
+          "expr": "( \n  sum(count_over_time({container_service=\"notification-service\", job=~\"$job\"} | json | level=\"error\" [24h]))\n  /\n  sum(count_over_time({container_service=\"notification-service\", job=~\"$job\"} | json  [24h]))\n) or vector(0)",
           "refId": "A"
         }
       ],
@@ -230,7 +230,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.95, {container_service=\"consumables-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m])",
+          "expr": "quantile_over_time(0.95, {container_service=\"notification-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m])",
           "refId": "A",
           "legendFormat": "P95"
         },
@@ -239,7 +239,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.99, {container_service=\"consumables-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m])",
+          "expr": "quantile_over_time(0.99, {container_service=\"notification-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m])",
           "refId": "B",
           "legendFormat": "P99"
         }
@@ -340,7 +340,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({container_service=\"consumables-service\", job=~\"$job\"} |~ \".*\" [1m])) by (level)",
+          "expr": "sum(count_over_time({container_service=\"notification-service\", job=~\"$job\"} |~ \".*\" [1m])) by (level)",
           "refId": "A"
         }
       ],
@@ -375,7 +375,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container_service=\"consumables-service\", job=~\"$job\"}",
+          "expr": "{container_service=\"notification-service\", job=~\"$job\"}",
           "refId": "A"
         }
       ],
@@ -410,7 +410,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container_service=\"consumables-service\", job=~\"$job\"} | json | level=\"error\"",
+          "expr": "{container_service=\"notification-service\", job=~\"$job\"} | json | level=\"error\"",
           "refId": "A"
         }
       ],
@@ -497,7 +497,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.95, {container_service=\"consumables-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m]) by (path)",
+          "expr": "quantile_over_time(0.95, {container_service=\"notification-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m]) by (path)",
           "refId": "A"
         }
       ],
@@ -532,7 +532,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{container_service=\"consumables-service\", job=~\"$job\"} | json | event=\"http_request\"",
+          "expr": "{container_service=\"notification-service\", job=~\"$job\"} | json | event=\"http_request\"",
           "refId": "A"
         }
       ],
@@ -619,7 +619,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({container_service=\"consumables-service\", job=~\"$job\"} | json | event=\"http_request\" [1m])) by (status)",
+          "expr": "sum(count_over_time({container_service=\"notification-service\", job=~\"$job\"} | json | event=\"http_request\" [1m])) by (status)",
           "refId": "A"
         }
       ],
@@ -630,7 +630,7 @@
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["Consumables-service", "logs"],
+  "tags": ["Notification-service", "logs"],
   "templating": {
     "list": [
       {
@@ -641,11 +641,11 @@
         },
         "hide": 0,
         "includeAll": true,
-        "label": "Consumables Service Replica",
+        "label": "Notification Service Replica",
         "multi": false,
         "name": "job",
         "options": [],
-        "query": "label_values({container_service=\"consumables-service\"}, job)",
+        "query": "label_values({container_service=\"notification-service\"}, job)",
         "refresh": 1,
         "regex": "",
         "skipUrlSync": false,
@@ -662,8 +662,8 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Consumables Service Logs",
-  "uid": "consumables-service-logs",
+  "title": "Notification Service Logs",
+  "uid": "notification-service-logs",
   "version": 2,
   "weekStart": ""
 }

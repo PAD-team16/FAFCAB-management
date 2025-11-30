@@ -20,6 +20,247 @@
   "liveNow": false,
   "panels": [
     {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 10,
+      "panels": [],
+      "title": "Service Overview (Aggregated)",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 1
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["last"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "count(count by(job) (count_over_time({container_service=\"communication-service\", job=~\"$job\"} [24h])))",
+          "refId": "A"
+        }
+      ],
+      "title": "Active Replicas",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "percentunit"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 1
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["mean"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": " (   sum(count_over_time({container_service=\"communication-service\", job=~\"$job\"} | json | level=\"error\" [24h]))  /  sum(count_over_time({container_service=\"communication-service\", job=~\"$job\"} | json  [24h]))) or vector(0)",
+          "refId": "A"
+        }
+      ],
+      "title": "Error Rate (5xx)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 20,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 12,
+        "x": 12,
+        "y": 1
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "quantile_over_time(0.95, {container_service=\"communication-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m])",
+          "refId": "A",
+          "legendFormat": "P95"
+        },
+        {
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "quantile_over_time(0.99, {container_service=\"communication-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m])",
+          "refId": "B",
+          "legendFormat": "P99"
+        }
+      ],
+      "title": "Request Latency (Aggregate)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 20,
+      "panels": [],
+      "title": "Log & Request Details",
+      "type": "row"
+    },
+    {
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -77,7 +318,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 0
+        "y": 7
       },
       "id": 1,
       "options": {
@@ -99,7 +340,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({job=\"communication-service\"} |~ \".*\" [1m])) by (level)",
+          "expr": "sum(count_over_time({container_service=\"communication-service\", job=~\"$job\"} |~ \".*\" [1m])) by (level)",
           "refId": "A"
         }
       ],
@@ -115,7 +356,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 8
+        "y": 15
       },
       "id": 2,
       "options": {
@@ -134,7 +375,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{job=\"communication-service\"}",
+          "expr": "{container_service=\"communication-service\", job=~\"$job\"}",
           "refId": "A"
         }
       ],
@@ -150,7 +391,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 20
+        "y": 27
       },
       "id": 3,
       "options": {
@@ -169,7 +410,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{job=\"communication-service\"} | json | level=\"error\"",
+          "expr": "{container_service=\"communication-service\", job=~\"$job\"} | json | level=\"error\"",
           "refId": "A"
         }
       ],
@@ -234,7 +475,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 20
+        "y": 27
       },
       "id": 4,
       "options": {
@@ -256,7 +497,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.95, {job=\"communication-service\"} | json | event=\"http_request\" | unwrap duration_ms [1m]) by (path)",
+          "expr": "quantile_over_time(0.95, {container_service=\"communication-service\", job=~\"$job\"} | json | event=\"http_request\" | unwrap duration_ms [1m]) by (path)",
           "refId": "A"
         }
       ],
@@ -272,7 +513,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 28
+        "y": 35
       },
       "id": 5,
       "options": {
@@ -291,7 +532,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "{job=\"communication-service\"} | json | event=\"http_request\"",
+          "expr": "{container_service=\"communication-service\", job=~\"$job\"} | json | event=\"http_request\"",
           "refId": "A"
         }
       ],
@@ -356,7 +597,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 28
+        "y": 35
       },
       "id": 6,
       "options": {
@@ -378,7 +619,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({job=\"communication-service\"} | json | event=\"http_request\" [1m])) by (status)",
+          "expr": "sum(count_over_time({container_service=\"communication-service\", job=~\"$job\"} | json | event=\"http_request\" [1m])) by (status)",
           "refId": "A"
         }
       ],
@@ -389,9 +630,31 @@
   "refresh": "5s",
   "schemaVersion": 38,
   "style": "dark",
-  "tags": ["communication-service", "logs"],
+  "tags": ["Communication-service", "logs"],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {
+          "selected": true,
+          "text": "All",
+          "value": ".*"
+        },
+        "hide": 0,
+        "includeAll": true,
+        "label": "Communication Service Replica",
+        "multi": false,
+        "name": "job",
+        "options": [],
+        "query": "label_values({container_service=\"communication-service\"}, job)",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query",
+        "useTags": false,
+        "allValue": ".+"
+      }
+    ]
   },
   "time": {
     "from": "now-1h",
@@ -401,6 +664,6 @@
   "timezone": "",
   "title": "Communication Service Logs",
   "uid": "communication-service-logs",
-  "version": 1,
+  "version": 2,
   "weekStart": ""
 }

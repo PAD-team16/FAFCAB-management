@@ -6,6 +6,7 @@ auth:
   public_routes:
     - "/api/auth/login"
     - "/api/auth/register"
+    - "/api/communication/health"  # For testing load balancing
     - "/api/auth/refresh"
     - "/api/auth/login/discord"
 
@@ -19,6 +20,17 @@ app:
     certfile: "cert.pem"
     keyfile: "key.pem"
   backend_service_timeout: 10
+
+  health_check:
+    interval: 30  # seconds
+    timeout: 5  # seconds
+  max_active_requests: 10
+  notification-service:
+    url: "http://notification-service:8090/api/email/send/batch"
+    devs_email:
+      - "viem2377@gmail.com"
+      - "bananananaaa6@gmail.com"
+    timeout: 15  # seconds
 
   routes:
 
@@ -73,7 +85,7 @@ app:
     - authorization  
 
 cache:
-  enabled: true
+  enabled: false
   default_ttl: 300      # 5 minutes for general GET requests
   token_ttl: 3600       # 1 hour for token/auth requests
   user_ttl: 900         # 15 minutes for user data
@@ -88,3 +100,4 @@ redis:
   port: 6379
   db: 0
   timeout: 5
+
