@@ -320,6 +320,39 @@ services:
     labels:
       logging: "promtail"
 
+  message-broker:
+    image: huntrese/message-broker:latest
+    container_name: message_broker
+    ports:
+      - "8004:8000"
+    depends_on:
+      - message-broker-db
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@message-broker-db:5432/message_broker
+      - PYTHONUNBUFFERED=1
+    networks:
+      - fafcab_network
+    command: ["gunicorn", "src.app:app", "--worker-class", "gthread", "--threads", "200", "--workers", "1", "--bind", "0.0.0.0:8000"]
+
+  message-broker-db:
+    image: postgres:13-alpine
+    container_name: message_broker_db
+    environment:
+      POSTGRES_DB: message_broker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5435:5432"  # Different port to avoid conflicts
+    volumes:
+      - message_broker_postgres_data:/var/lib/postgresql/data
+    networks:
+      - fafcab_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   mailhog:
     image: mailhog/mailhog:latest
     ports:
@@ -466,6 +499,8 @@ volumes:
   loki_data:
   grafana_data:
   dw_data:
+    driver: local
+  message_broker_postgres_data:
     driver: local
 
 networks:
