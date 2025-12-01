@@ -1,0 +1,491 @@
+{
+	"info": {
+		"_postman_id": "12345678-1234-1234-1234-123456789012",
+		"name": "FAFCAB Notification Service",
+		"description": "API collection for testing the FAFCAB Notification Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Email Notifications",
+			"item": [
+				{
+					"name": "Send Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"to\": \"{{test_email}}\",\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/email/send",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"email",
+								"send"
+							]
+						},
+						"description": "Send an email notification to a specified recipient"
+					},
+					"response": []
+				},
+				{
+					"name": "Send batch Emails",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"emails\": [\"{{test_email}}\", \"{{test_email_2}}\", \"{{test_email_3}}\"],\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/email/send/batch",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"email",
+								"send",
+								"batch"
+							]
+						},
+						"description": "Send batch emails to multiple recipients"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for sending email notifications via SMTP"
+		},
+		{
+			"name": "Discord Notifications",
+			"item": [
+				{
+					"name": "Send Message to General Channel",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response contains success message\", function () {",
+									"    pm.expect(pm.response.text()).to.include(\"Message sent successfully\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"discord",
+								"send"
+							]
+						},
+						"description": "Send a message to the configured general Discord channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Message to Specific Channel",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send/{{discord_channel_id}}",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"discord",
+								"send",
+								"{{discord_channel_id}}"
+							]
+						},
+						"description": "Send a message to a specific Discord channel by channel ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Mention User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"channelId\": \"{{discord_channel_id}}\",\n    \"userId\": \"{{discord_user_id}}\",\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send/mention-user",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								
+								"discord",
+								"send",
+								"mention-user"
+							]
+						},
+						"description": "Send a message with a user mention in a specific Discord channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Mention Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"channelId\": \"{{discord_channel_id}}\",\n    \"roleId\": \"{{discord_role_id}}\",\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send/mention-role",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"discord",
+								"send",
+								"mention-role"
+							]
+						},
+						"description": "Send a message with a role mention in a specific Discord channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Mention Everyone",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"channelId\": \"{{discord_channel_id}}\",\n    \"message\": \"Important announcement: {{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send/mention-everyone",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"discord",
+								"send",
+								"mention-everyone"
+							]
+						},
+						"description": "Send a message with @everyone mention in a specific Discord channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Mention Here",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"channelId\": \"{{discord_channel_id}}\",\n    \"message\": \"Quick update for online users: {{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send/mention-here",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"discord",
+								"send",
+								"mention-here"
+							]
+						},
+						"description": "Send a message with @here mention in a specific Discord channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Mention Multiple Users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"channelId\": \"{{discord_channel_id}}\",\n    \"userIds\": [\"{{discord_user_id}}\", \"{{discord_user_id_2}}\"],\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send/mention-multiple-users",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"discord",
+								"send",
+								"mention-multiple-users"
+							]
+						},
+						"description": "Send a message with multiple user mentions in a specific Discord channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Mention Role by Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"channelId\": \"{{discord_channel_id}}\",\n    \"roleName\": \"{{discord_role_name}}\",\n    \"message\": \"{{test_message}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/discord/send/mention-role-by-name",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"discord",
+								"send",
+								"mention-role-by-name"
+							]
+						},
+						"description": "Send a message with a role mention using role name in a specific Discord channel"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for sending Discord messages and mentions via Discord bot"
+		},
+		{
+			"name": "Health & Documentation",
+			"item": [
+				{
+					"name": "Service Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/actuator/health",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"actuator",
+								"health"
+							]
+						},
+						"description": "Check if the notification service is running and healthy"
+					},
+					"response": []
+				},
+				{
+					"name": "Get OpenAPI Documentation",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/api-docs",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"api-docs"
+							]
+						},
+						"description": "Get the OpenAPI specification in JSON format"
+					},
+					"response": []
+				},
+				{
+					"name": "Access Swagger UI",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/swagger-ui.html",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"swagger-ui.html"
+							]
+						},
+						"description": "Access the interactive Swagger UI documentation"
+					},
+					"response": []
+				}
+			],
+			"description": "Health checks and API documentation endpoints"
+		},
+		{
+			"name": "Server-Sent Events",
+			"item": [
+				{
+					"name": "Subscribe to SSE Events",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "text/event-stream",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/sse/subscribe",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"sse",
+								"subscribe"
+							]
+						},
+						"description": "Subscribe to server-sent events (SSE) for real-time notifications"
+					},
+					"response": []
+				},
+				{
+					"name": "Send message to SSE Subscribers",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+							],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"message\": \"Test SSE message from Postman\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}{{api_base_path}}/sse/send",
+							"host": [
+								"{{base_url}}{{api_base_path}}"
+							],
+							"path": [
+								"sse",
+								"send"
+							]
+						},
+						"description": "Send a test message to SSE subscribers"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoint for subscribing to server-sent events"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8090",
+			"type": "string"
+		},
+		{
+			"key": "api_base_path",
+			"value": "/api/notification-service",
+			"type": "string"
+		}
+	]
+}
