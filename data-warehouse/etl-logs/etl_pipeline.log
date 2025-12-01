@@ -1,0 +1,218 @@
+2025-11-30 23:04:15,143 - INFO - ETL scheduler started. Running every 60 minutes.
+2025-11-30 23:04:15,144 - INFO - Running initial ETL process...
+2025-11-30 23:04:15,145 - INFO - Starting full ETL process
+2025-11-30 23:04:15,162 - INFO - Connected to data warehouse successfully
+2025-11-30 23:04:15,183 - INFO - Connected to main_db database (fafcab) successfully
+2025-11-30 23:04:15,201 - INFO - Connected to checkin_db database (checkin_service) successfully
+2025-11-30 23:04:15,232 - INFO - Connected to db1 database (fafcab_db1) successfully
+2025-11-30 23:04:15,257 - INFO - Connected to db2 database (fafcab_db2) successfully
+2025-11-30 23:04:15,258 - INFO - === EXTRACT PHASE ===
+2025-11-30 23:04:15,264 - ERROR - Failed to extract users: relation "users" does not exist
+LINE 4:                 FROM users u
+                             ^
+
+2025-11-30 23:04:15,267 - ERROR - Failed to extract budget data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:04:15,291 - INFO - Extracted 2 check-in records and 2 temp guest records from Check-in Service
+2025-11-30 23:04:15,293 - ERROR - Failed to extract consumables data: relation "consumables" does not exist
+LINE 3:                 FROM consumables
+                             ^
+
+2025-11-30 23:04:15,300 - ERROR - Failed to extract sharing data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:04:15,304 - ERROR - Failed to extract communication data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:04:15,308 - ERROR - Failed to extract booking data: relation "bookings" does not exist
+LINE 3:                 FROM bookings
+                             ^
+
+2025-11-30 23:04:15,311 - ERROR - Failed to extract fundraising data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:04:15,313 - ERROR - Failed to extract lost and found data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:04:15,330 - INFO - Data quality report saved to /app/logs/quality_report_20251130_230415.json
+2025-11-30 23:04:15,331 - INFO - === TRANSFORM PHASE ===
+2025-11-30 23:04:15,344 - INFO - Transformed 2 check-in records for data warehouse
+2025-11-30 23:04:15,346 - ERROR - ETL process failed: 'timestamp'
+2025-11-30 23:04:15,373 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://172.24.0.13:8000
+2025-11-30 23:04:15,374 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-30 23:04:18,843 - INFO - 127.0.0.1 - - [30/Nov/2025 23:04:18] "[35m[1mGET /health HTTP/1.1[0m" 500 -
+2025-11-30 23:04:49,209 - INFO - 127.0.0.1 - - [30/Nov/2025 23:04:49] "[35m[1mGET /health HTTP/1.1[0m" 500 -
+2025-11-30 23:04:56,494 - INFO - 172.24.0.1 - - [30/Nov/2025 23:04:56] "[35m[1mGET /health HTTP/1.1[0m" 500 -
+2025-11-30 23:05:19,469 - INFO - 127.0.0.1 - - [30/Nov/2025 23:05:19] "[35m[1mGET /health HTTP/1.1[0m" 500 -
+2025-11-30 23:05:46,748 - INFO - Connected to data warehouse successfully
+2025-11-30 23:05:46,760 - INFO - Connected to main_db database (fafcab) successfully
+2025-11-30 23:05:46,774 - INFO - Connected to checkin_db database (checkin_service) successfully
+2025-11-30 23:05:46,785 - INFO - Connected to db1 database (fafcab_db1) successfully
+2025-11-30 23:05:46,796 - INFO - Connected to db2 database (fafcab_db2) successfully
+2025-11-30 23:05:46,804 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://172.24.0.13:8000
+2025-11-30 23:05:46,805 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-30 23:05:51,000 - INFO - 127.0.0.1 - - [30/Nov/2025 23:05:51] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:05:53,370 - INFO - 172.24.0.1 - - [30/Nov/2025 23:05:53] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:06:00,240 - INFO - 172.24.0.1 - - [30/Nov/2025 23:06:00] "GET /stats HTTP/1.1" 200 -
+2025-11-30 23:06:15,590 - INFO - Starting full ETL process
+2025-11-30 23:06:15,605 - INFO - Connected to data warehouse successfully
+2025-11-30 23:06:15,618 - INFO - Connected to main_db database (fafcab) successfully
+2025-11-30 23:06:15,632 - INFO - Connected to checkin_db database (checkin_service) successfully
+2025-11-30 23:06:15,642 - INFO - Connected to db1 database (fafcab_db1) successfully
+2025-11-30 23:06:15,653 - INFO - Connected to db2 database (fafcab_db2) successfully
+2025-11-30 23:06:15,654 - INFO - === EXTRACT PHASE ===
+2025-11-30 23:06:15,656 - ERROR - Failed to extract users: relation "users" does not exist
+LINE 4:                 FROM users u
+                             ^
+
+2025-11-30 23:06:15,658 - ERROR - Failed to extract budget data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:06:15,670 - INFO - Extracted 2 check-in records and 2 temp guest records from Check-in Service
+2025-11-30 23:06:15,672 - ERROR - Failed to extract consumables data: relation "consumables" does not exist
+LINE 3:                 FROM consumables
+                             ^
+
+2025-11-30 23:06:15,674 - ERROR - Failed to extract sharing data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:06:15,677 - ERROR - Failed to extract communication data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:06:15,679 - ERROR - Failed to extract booking data: relation "bookings" does not exist
+LINE 3:                 FROM bookings
+                             ^
+
+2025-11-30 23:06:15,681 - ERROR - Failed to extract fundraising data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:06:15,683 - ERROR - Failed to extract lost and found data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:06:15,697 - INFO - Data quality report saved to /app/logs/quality_report_20251130_230615.json
+2025-11-30 23:06:15,697 - INFO - === TRANSFORM PHASE ===
+2025-11-30 23:06:15,705 - INFO - Transformed 2 check-in records for data warehouse
+2025-11-30 23:06:15,708 - ERROR - ETL process failed: 'timestamp'
+2025-11-30 23:06:15,712 - INFO - 172.24.0.1 - - [30/Nov/2025 23:06:15] "POST /trigger HTTP/1.1" 200 -
+2025-11-30 23:06:21,207 - INFO - 127.0.0.1 - - [30/Nov/2025 23:06:21] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:06:32,101 - INFO - 172.24.0.1 - - [30/Nov/2025 23:06:32] "GET /quality-reports HTTP/1.1" 200 -
+2025-11-30 23:06:54,322 - INFO - 127.0.0.1 - - [30/Nov/2025 23:06:54] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:07:27,926 - INFO - 127.0.0.1 - - [30/Nov/2025 23:07:27] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:07:59,153 - INFO - 127.0.0.1 - - [30/Nov/2025 23:07:59] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:08:29,660 - INFO - 127.0.0.1 - - [30/Nov/2025 23:08:29] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:09:00,186 - INFO - 127.0.0.1 - - [30/Nov/2025 23:09:00] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:09:30,491 - INFO - 127.0.0.1 - - [30/Nov/2025 23:09:30] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:10:00,737 - INFO - 127.0.0.1 - - [30/Nov/2025 23:10:00] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:10:31,009 - INFO - 127.0.0.1 - - [30/Nov/2025 23:10:31] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:11:01,269 - INFO - 127.0.0.1 - - [30/Nov/2025 23:11:01] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:11:31,631 - INFO - 127.0.0.1 - - [30/Nov/2025 23:11:31] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:12:01,871 - INFO - 127.0.0.1 - - [30/Nov/2025 23:12:01] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:12:32,104 - INFO - 127.0.0.1 - - [30/Nov/2025 23:12:32] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:13:02,292 - INFO - 127.0.0.1 - - [30/Nov/2025 23:13:02] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:13:32,317 - INFO - ETL scheduler started. Running every 60 minutes.
+2025-11-30 23:13:32,318 - INFO - Running initial ETL process...
+2025-11-30 23:13:32,318 - INFO - Starting full ETL process
+2025-11-30 23:13:32,333 - INFO - Connected to data warehouse successfully
+2025-11-30 23:13:32,346 - INFO - Connected to main_db database (fafcab) successfully
+2025-11-30 23:13:32,358 - INFO - Connected to checkin_db database (checkin_service) successfully
+2025-11-30 23:13:32,368 - INFO - Connected to db1 database (fafcab_db1) successfully
+2025-11-30 23:13:32,381 - INFO - Connected to db2 database (fafcab_db2) successfully
+2025-11-30 23:13:32,382 - INFO - === EXTRACT PHASE ===
+2025-11-30 23:13:32,383 - WARNING - Table 'users' does not exist in User Management Service database. Schema may not be initialized yet.
+2025-11-30 23:13:32,385 - ERROR - Database error while extracting budget data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:32,396 - INFO - Extracted 2 check-in records and 2 temp guest records from Check-in Service
+2025-11-30 23:13:32,398 - WARNING - Table 'consumables' does not exist in Consumables Service database. Schema may not be initialized yet.
+2025-11-30 23:13:32,399 - ERROR - Database error while extracting sharing data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:32,401 - ERROR - Database error while extracting communication data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:32,403 - WARNING - Table 'bookings' does not exist in Cab Booking Service database. Schema may not be initialized yet.
+2025-11-30 23:13:32,405 - ERROR - Database error while extracting fundraising data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:32,407 - ERROR - Database error while extracting lost and found data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:32,421 - INFO - Data quality report saved to /app/logs/quality_report_20251130_231332.json
+2025-11-30 23:13:32,421 - INFO - === TRANSFORM PHASE ===
+2025-11-30 23:13:32,433 - INFO - Transformed 2 check-in records for data warehouse
+2025-11-30 23:13:32,435 - ERROR - ETL process failed: 'timestamp'
+2025-11-30 23:13:32,484 - INFO - Connected to data warehouse successfully
+2025-11-30 23:13:32,494 - INFO - Connected to main_db database (fafcab) successfully
+2025-11-30 23:13:32,504 - INFO - Connected to checkin_db database (checkin_service) successfully
+2025-11-30 23:13:32,517 - INFO - Connected to db1 database (fafcab_db1) successfully
+2025-11-30 23:13:32,527 - INFO - Connected to db2 database (fafcab_db2) successfully
+2025-11-30 23:13:32,533 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://172.24.0.13:8000
+2025-11-30 23:13:32,534 - INFO - [33mPress CTRL+C to quit[0m
+2025-11-30 23:13:36,707 - INFO - 127.0.0.1 - - [30/Nov/2025 23:13:36] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:13:39,950 - INFO - Starting full ETL process
+2025-11-30 23:13:39,963 - INFO - Connected to data warehouse successfully
+2025-11-30 23:13:39,976 - INFO - Connected to main_db database (fafcab) successfully
+2025-11-30 23:13:39,986 - INFO - Connected to checkin_db database (checkin_service) successfully
+2025-11-30 23:13:40,002 - INFO - Connected to db1 database (fafcab_db1) successfully
+2025-11-30 23:13:40,015 - INFO - Connected to db2 database (fafcab_db2) successfully
+2025-11-30 23:13:40,016 - INFO - === EXTRACT PHASE ===
+2025-11-30 23:13:40,017 - WARNING - Table 'users' does not exist in User Management Service database. Schema may not be initialized yet.
+2025-11-30 23:13:40,020 - ERROR - Database error while extracting budget data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:40,033 - INFO - Extracted 2 check-in records and 2 temp guest records from Check-in Service
+2025-11-30 23:13:40,034 - WARNING - Table 'consumables' does not exist in Consumables Service database. Schema may not be initialized yet.
+2025-11-30 23:13:40,036 - ERROR - Database error while extracting sharing data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:40,041 - ERROR - Database error while extracting communication data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:40,044 - WARNING - Table 'bookings' does not exist in Cab Booking Service database. Schema may not be initialized yet.
+2025-11-30 23:13:40,045 - ERROR - Database error while extracting fundraising data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:40,047 - ERROR - Database error while extracting lost and found data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:13:40,063 - INFO - Data quality report saved to /app/logs/quality_report_20251130_231340.json
+2025-11-30 23:13:40,064 - INFO - === TRANSFORM PHASE ===
+2025-11-30 23:13:40,075 - INFO - Transformed 2 check-in records for data warehouse
+2025-11-30 23:13:40,078 - ERROR - ETL process failed: 'timestamp'
+2025-11-30 23:13:40,083 - INFO - 172.24.0.1 - - [30/Nov/2025 23:13:40] "POST /trigger HTTP/1.1" 200 -
+2025-11-30 23:14:06,915 - INFO - 127.0.0.1 - - [30/Nov/2025 23:14:06] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:14:37,121 - INFO - 127.0.0.1 - - [30/Nov/2025 23:14:37] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:15:07,354 - INFO - 127.0.0.1 - - [30/Nov/2025 23:15:07] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:15:37,558 - INFO - 127.0.0.1 - - [30/Nov/2025 23:15:37] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:16:07,762 - INFO - 127.0.0.1 - - [30/Nov/2025 23:16:07] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:16:38,015 - INFO - 127.0.0.1 - - [30/Nov/2025 23:16:38] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:17:08,221 - INFO - 127.0.0.1 - - [30/Nov/2025 23:17:08] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:17:30,717 - INFO - 172.24.0.1 - - [30/Nov/2025 23:17:30] "GET /quality-reports HTTP/1.1" 200 -
+2025-11-30 23:17:38,431 - INFO - 127.0.0.1 - - [30/Nov/2025 23:17:38] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:18:08,664 - INFO - 127.0.0.1 - - [30/Nov/2025 23:18:08] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:18:38,804 - INFO - 127.0.0.1 - - [30/Nov/2025 23:18:38] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:18:47,466 - INFO - ETL scheduler started. Running every 60 minutes.
+2025-11-30 23:18:47,466 - INFO - Running initial ETL process...
+2025-11-30 23:18:47,466 - INFO - Starting full ETL process
+2025-11-30 23:18:47,492 - INFO - Connected to data warehouse successfully
+2025-11-30 23:18:47,507 - INFO - Connected to main_db database (fafcab) successfully
+2025-11-30 23:18:47,526 - INFO - Connected to checkin_db database (checkin_service) successfully
+2025-11-30 23:18:47,543 - INFO - Connected to db1 database (fafcab_db1) successfully
+2025-11-30 23:18:47,555 - INFO - Connected to db2 database (fafcab_db2) successfully
+2025-11-30 23:18:47,556 - INFO - === EXTRACT PHASE ===
+2025-11-30 23:18:47,558 - WARNING - Table 'users' does not exist in User Management Service database. Schema may not be initialized yet.
+2025-11-30 23:18:47,561 - ERROR - Database error while extracting budget data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:18:47,575 - INFO - Extracted 2 check-in records and 2 temp guest records from Check-in Service
+2025-11-30 23:18:47,577 - WARNING - Table 'consumables' does not exist in Consumables Service database. Schema may not be initialized yet.
+2025-11-30 23:18:47,579 - ERROR - Database error while extracting sharing data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:18:47,582 - ERROR - Database error while extracting communication data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:18:47,586 - WARNING - Table 'bookings' does not exist in Cab Booking Service database. Schema may not be initialized yet.
+2025-11-30 23:18:47,589 - ERROR - Database error while extracting fundraising data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:18:47,597 - ERROR - Database error while extracting lost and found data: current transaction is aborted, commands ignored until end of transaction block
+
+2025-11-30 23:18:47,629 - INFO - Data quality report saved to /app/logs/quality_report_20251130_231847.json
+2025-11-30 23:18:47,629 - INFO - === TRANSFORM PHASE ===
+2025-11-30 23:18:47,649 - INFO - Transformed 2 check-in records for data warehouse
+2025-11-30 23:18:47,651 - ERROR - ETL process failed: 'timestamp'
+2025-11-30 23:19:09,006 - INFO - 127.0.0.1 - - [30/Nov/2025 23:19:09] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:19:39,336 - INFO - 127.0.0.1 - - [30/Nov/2025 23:19:39] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:20:09,642 - INFO - 127.0.0.1 - - [30/Nov/2025 23:20:09] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:20:11,357 - INFO - 172.24.0.1 - - [30/Nov/2025 23:20:11] "GET /health HTTP/1.1" 200 -
+2025-11-30 23:20:15,722 - INFO - 172.24.0.1 - - [30/Nov/2025 23:20:15] "GET /stats HTTP/1.1" 200 -
+2025-11-30 23:20:23,209 - INFO - 172.24.0.1 - - [30/Nov/2025 23:20:23] "GET /quality-reports HTTP/1.1" 200 -
+2025-11-30 23:20:37,427 - INFO - 172.24.0.1 - - [30/Nov/2025 23:20:37] "GET /quality-reports/all HTTP/1.1" 200 -
+2025-11-30 23:20:40,004 - INFO - 127.0.0.1 - - [30/Nov/2025 23:20:40] "GET /health HTTP/1.1" 200 -
