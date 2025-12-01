@@ -30,9 +30,11 @@ Microservices are implemented using multiple technologies to optimize performanc
 
 # Architectural Diagram of Microservices operation
 
-<img width="2192" height="1111" alt="architecture drawio" src="https://github.com/user-attachments/assets/f42eb1fb-24df-4aa6-9843-5b041f2568d7" />
+<img width="2002" height="1312" alt="PAD_Architecture_latest drawio" src="https://github.com/user-attachments/assets/89d5d997-1ac6-4af4-87e4-67d72d56e3fc" />
 
-The diagram above illustrates the microservices architecture designed for the FAFCab system. It highlights how different services, such as Notification Service, Communication Service, Budgeting Service, Fund Raising Service, Tea Management Service, and User Management Service, interact with each other through the API Gateway and Service Registry. Each service is responsible for a specific function, ranging from financial tracking and consumable management to user check-ins, booking, and lost-and-found operations. The modular design ensures that responsibilities are clearly separated, making the system scalable, maintainable, and easier to extend with new features as needed.
+
+
+The diagram above illustrates the microservices architecture designed for the FAFCab system. It highlights how different services, such as Notification Service, Communication Service, Budgeting Service, Fund Raising Service, Tea Management Service, and User Management Service, interact with each other through the API Gateway and Message broker. Each service is responsible for a specific function, ranging from financial tracking and consumable management to user check-ins, booking, and lost-and-found operations. The modular design ensures that responsibilities are clearly separated, making the system scalable, maintainable, and easier to extend with new features as needed.
 
 ## **1. User Management Service**
 
@@ -328,6 +330,355 @@ A Spring Boot microservice for sending email and Discord notifications as part o
     }
     ```
   - **Success Response (200 OK):** "Role mentioned by name!"
+
+# Message Broker
+
+## Architecture Overview
+The new architecture implements a dual communication pattern with distinct protocols for different scenarios:
+
+- Client→Gateway→Service: HTTP requests with authentication, caching, and routing
+- Service→Broker→Service: HTTP-agnostic internal messaging with load balancing and circuit breaking
+- Pub/Sub: Event-based communication with topic routing
+
+## 1. Communication Pattern Differences
+
+### Client→Gateway→Service Communication
+Request Format:
+[Client] → [Gateway] → [Message Broker] → [Target Service]
+
+Example Request:
+GET /api/users/123 HTTP/1.1
+Authorization: Bearer <client_jwt_token>
+User-Agent: mobile-app/1.0
+
+Gateway Processing:
+- Authenticates and validates client JWT
+- Checks cache for GET requests
+- Routes to appropriate service via broker
+- Drops client authentication headers (not passed to services)
+- Adds user context as separate field
+
+### Service→Broker→Service Communication
+Request Format:
+[Source Service] → [Message Broker] → [Target Service]
+
+Example Request:
+```
+{
+  "type": "gateway",
+  "service": "user-service",
+  "method": "GET",
+  "path": "/api/users/123",
+  "payload": {},
+  "headers": {
+    "X-Source-Service": "order-service"  // Internal service identification
+  },
+  "user_context": {                      // From original client request via gateway
+    "user_id": "123", 
+    "role": "admin"
+  },
+  "request_id": "uuid-1234567890",
+  "reply_to": "topic.name.for.response"  // For async responses
+}
+```
+
+Broker Processing:
+- Performs load balancing across healthy instances
+- Checks circuit breaker state
+- Tracks request correlation
+- Handles retries and dead letter queue
+
+## 2. Message Format Differences
+
+### Gateway→Service Messages (Client origin)
+- Include extracted user context (not raw auth headers)
+- May include caching directives
+- Follow standard HTTP conventions
+- Route via path prefix matching
+
+### Service→Service Messages (Internal origin)
+- Include internal service-to-service authentication
+- Contain correlation IDs for tracing
+- May specify reply topics for async responses
+- Include retry information and failure tracking
+
+## 3. Implementation Protocols
+
+### HTTP Service Implementation
+# Example: User Service Endpoint
+```
+@app.route('/webhook/user-created', methods=['POST'])
+def handle_user_created():
+    # This endpoint receives messages from broker
+    event_data = request.get_json()
+    user_info = event_data['payload']
+    
+    # Process the event
+    send_welcome_email(user_info['email'])
+    log_user_activity(user_info['id'])
+    
+    return {'success': True}
+```
+
+### Message Broker API Endpoints
+
+#### Service Registration (Required at startup)
+```
+POST http://message-broker:8000/gateway/register
+Content-Type: application/json
+
+{
+  "name": "user-service",
+  "host": "user-service-container", 
+  "port": 8080,
+  "endpoints": [
+    "/api/users",        // Load balanced gateway→service
+    "/api/profiles"      // Load balanced gateway→service
+  ],
+  "topics": {
+    "user.created": "/webhook/user-created",      // Pub/sub
+    "user.updated": "/webhook/user-updated"       // Pub/sub
+  }
+}
+```
+
+#### Gateway Service Call (Sync via polling)
+```
+POST http://message-broker:8000/publish
+{
+  "type": "gateway",
+  "service": "user-service",
+  "method": "GET", 
+  "path": "/api/users/123",
+  "user_context": {"user_id": "123", "role": "admin"},  // From original client request
+  "request_id": "req-uuid-12345",
+  "headers": {"X-Source-Service": "order-service"}      // Internal service auth
+}
+```
+
+#### Response Polling
+```
+GET http://message-broker:8000/gateway/response/{request_id}
+```
+
+#### Pub/Sub Event Publishing
+```
+POST http://message-broker:8000/publish
+{
+  "type": "pubsub",
+  "topic": "user.created",
+  "payload": {
+    "user_id": "123",
+    "email": "user@example.com",
+    "timestamp": 1234567890
+  },
+  "source_service": "auth-service"
+}
+```
+
+## 4. Authentication & Authorization Flow
+
+### Client Request Flow
+
+1. Client sends request with JWT: Authorization: Bearer <client_token>
+2. Gateway validates JWT and extracts user context
+3. Gateway drops Authorization header 
+4. Gateway forwards request to broker with user context
+5. Broker routes to target service with user context (not JWT)
+
+### Service-to-Service Flow  
+1. Source service makes internal request to broker
+2. Service uses internal service-to-service authentication
+3. Service includes user context if needed from original client request
+4. Broker handles routing with circuit breaker and load balancing
+5. Target service receives request with user context and source service identification
+
+### Internal Service Authentication
+Services use internal authentication methods between themselves, not client JWTs:
+- Service-to-service token (if implemented)
+- Network-level security (container isolation)
+- Service registration validation
+- Internal API keys
+
+# Long-Term Saga Implementation Report
+
+## Overview
+
+The long-term saga in this project implements a distributed transaction management system for purchasing consumables. It ensures data consistency across multiple services by coordinating a sequence of operations and providing a rollback mechanism in case of failures.
+
+## How It Works
+
+### 1. **Initial Request**
+- The saga begins when a user sends a `PurchaseConsumableRequest` containing details like consumable name, count, price, and the responsible entity.
+
+### 2. **Budget Deduction**
+- The saga first attempts to deduct the required amount from the budget service at `{budget_url}/api/budget`.
+- If the budget deduction fails, the saga immediately returns an error without proceeding further.
+
+### 3. **Consumable Addition**
+- After successful budget deduction, the saga attempts to add the consumable to the inventory service at `{consumable_url}/api/consumables`.
+- If this operation succeeds, the saga completes successfully with a 201 status code.
+
+### 4. **Error Handling & Rollback**
+- If the consumable addition fails, the saga initiates a rollback process.
+- It attempts to refund the previously deducted amount back to the budget service.
+- The rollback operation includes retry logic with up to 5 attempts to ensure robustness.
+- If the rollback also fails, the system returns a critical error indicating both operations failed.
+
+### 5. **Endpoint Integration**
+- The saga is exposed through an endpoint at `/api/consumables/purchase` in the main application.
+- This endpoint validates the request and passes it to the saga orchestrator.
+
+## Benefits
+
+- **Data Consistency**: Ensures that either both budget deduction and consumable addition succeed, or a rollback occurs if the second operation fails.
+- **Reliability**: Includes error handling and retry mechanisms to handle transient service failures.
+- **Traceability**: Proper logging throughout the saga process enables debugging and monitoring.
+  
+
+# FAFCAB Data Warehouse ETL Pipeline
+
+## Overview
+This directory contains the ETL (Extract, Transform, Load) pipeline for the FAFCAB Management Platform. The pipeline extracts data from various microservices, transforms it into a consistent format, and loads it into a centralized data warehouse for analytics and reporting.
+
+## Architecture
+The ETL pipeline is designed to work with the microservices architecture of the FAFCAB platform:
+
+- **Source Databases**: Multiple PostgreSQL databases used by different microservices
+- **ETL Pipeline**: Python-based extraction, transformation, and loading processes
+- **Data Warehouse**: Centralized PostgreSQL database for analytics
+- **Monitoring API**: REST API for monitoring ETL pipeline status
+
+## Directory Structure
+```
+data-warehouse/
+├── .env                  # Environment variables
+├── docker-compose.yml    # Docker configuration
+├── Dockerfile            # ETL pipeline Dockerfile
+├── Dockerfile.api        # API service Dockerfile
+├── requirements.txt      # Python dependencies
+├── dw-schema.sql         # Data warehouse schema
+├── etl_pipeline.py       # Main ETL pipeline implementation
+├── api.py                # Monitoring API
+├── test_connections.py   # Database connection test script
+├── DATABASE_CONNECTIONS.md # Database connection documentation
+└── etl-logs/             # Log directory
+```
+
+## Services
+
+### Data Warehouse Database
+- **Purpose**: Stores consolidated data for analytics
+- **Port**: 5433 (externally mapped from 5432 internally)
+- **Database**: `fafcab_dw`
+- **User**: `dw_user`
+
+### ETL Pipeline Service
+- **Purpose**: Runs the ETL process on a schedule
+- **Language**: Python 3.10
+- **Scheduling**: Configurable interval (default: every 60 minutes)
+
+### ETL Monitoring API
+- **Purpose**: Provides REST API for monitoring the ETL pipeline
+- **Port**: 8001 (externally mapped from 8000 internally)
+- **Endpoints**:
+  - `GET /health` - Health check
+  - `GET /stats` - ETL run statistics
+  - `POST /trigger` - Manually trigger ETL process
+  - `GET /quality-reports` - Latest data quality report
+  - `GET /quality-reports/all` - All recent quality reports
+
+## Setup
+
+### Prerequisites
+- Docker and Docker Compose
+- Python 3.10+ (for local development)
+
+### Environment Variables
+The following environment variables need to be configured in the `.env` file:
+
+```bash
+# Data Warehouse Database Configuration
+DW_POSTGRES_USER=XXX
+DW_POSTGRES_PASSWORD=XXX
+DW_POSTGRES_DB=XXX
+DW_POSTGRES_HOST=XXX
+DW_POSTGRES_PORT=XXX
+
+# Source Database Configurations
+SOURCE_MAIN_DB_HOST=XXX
+SOURCE_MAIN_DB_PORT=5432
+POSTGRES_DB=XXX
+POSTGRES_USER=XXX
+POSTGRES_PASSWORD=XXX
+
+# Check-in Service database
+SOURCE_CHECKIN_DB_HOST=XXX-db
+SOURCE_CHECKIN_DB_PORT=XXX
+SOURCE_CHECKIN_DB_NAME=XXX
+SOURCE_CHECKIN_DB_USER=XXX
+SOURCE_CHECKIN_DB_PASSWORD=XXX
+
+# Additional service databases
+POSTGRES_DB_1=XXX
+POSTGRES_DB_2=XXX
+
+# ETL Configuration
+SCHEDULER_INTERVAL_MINUTES=60
+```
+
+### Running with Docker Compose
+1. Navigate to the `data-warehouse` directory
+2. Configure the environment variables in `.env`
+3. Run `docker-compose up -d` to start all services
+4. The ETL pipeline will automatically run based on the configured schedule
+
+### Running Locally (Development)
+1. Install Python dependencies: `pip install -r requirements.txt`
+2. Configure environment variables in `.env`
+3. Run the ETL pipeline: `python etl_pipeline.py`
+4. Run the monitoring API: `python api.py`
+
+## Testing Database Connections
+To verify that all database connections are working correctly:
+
+```bash
+python test_connections.py
+```
+
+## Monitoring
+The ETL pipeline provides several ways to monitor its operation:
+
+1. **Log Files**: Check `/app/logs/etl_pipeline.log` in the container
+2. **REST API**: Use the monitoring API endpoints
+3. **Data Quality Reports**: Generated after each ETL run and stored in `/app/logs/`
+
+## Extending the ETL Pipeline
+To add support for additional services:
+
+1. Add the database configuration to the `source_configs` dictionary in `ETLPipeline.__init__()`
+2. Create a new extraction method for the service data
+3. Create transformation methods as needed
+4. Create loading methods to insert data into the data warehouse
+5. Update the main ETL process to call the new methods
+
+## Troubleshooting
+
+### Connection Issues
+- Verify that all Docker services are running: `docker-compose ps`
+- Check that the environment variables are correctly set
+- Ensure that the database credentials are correct
+- Verify network connectivity between services
+
+### Data Extraction Issues
+- Check the service-specific database schemas
+- Verify that the SQL queries in the extraction methods match the actual table structures
+- Ensure that the required tables and columns exist in the source databases
+
+### Performance Issues
+- Monitor the log files for slow queries
+- Consider adding indexes to source databases if needed
+- Adjust the ETL schedule frequency based on system load
 
 ## Development Setup
 
